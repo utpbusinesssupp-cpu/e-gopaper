@@ -3,15 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>e-Gopaper</title>
+<title>e-Gopaper Auth</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-
 body{
   margin:0;
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   background: linear-gradient(135deg,#e0e7ff,#f4f6fb);
   display:flex;
   align-items:center;
@@ -19,7 +18,6 @@ body{
   height:100vh;
 }
 
-/* CARD */
 .card{
   width:380px;
   background:white;
@@ -29,28 +27,14 @@ body{
   text-align:center;
 }
 
-/* TITLE */
-h2{
-  margin-bottom:18px;
-  color:#1f2937;
-}
-
-/* INPUTS */
 input{
   width:100%;
   padding:12px;
   margin:8px 0;
   border:1px solid #ddd;
   border-radius:10px;
-  outline:none;
 }
 
-input:focus{
-  border-color:#2563eb;
-  box-shadow:0 0 0 2px rgba(37,99,235,0.15);
-}
-
-/* BUTTON */
 button{
   width:100%;
   padding:12px;
@@ -60,72 +44,51 @@ button{
   border:none;
   border-radius:10px;
   cursor:pointer;
-  font-weight:bold;
-  transition:0.2s;
 }
 
-button:hover{
-  background:#1e4fd6;
-  transform:scale(1.02);
-}
-
-/* SWITCH LINK */
-.switch{
-  margin-top:15px;
-  font-size:14px;
-  color:#6b7280;
-}
-
-.switch span{
-  color:#2563eb;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-/* MESSAGE */
-.msg{
-  font-size:12px;
-  color:gray;
+.small{
+  font-size:13px;
   margin-top:10px;
+  color:#555;
 }
 
-/* HIDE */
-.hidden{display:none;}
+.link{
+  color:#2563eb;
+  cursor:pointer;
+  font-weight:bold;
+}
 
+.hidden{display:none;}
 </style>
 </head>
 
 <body>
 
-<!-- AUTH CARD -->
-<div id="auth" class="card">
+<div class="card">
 
   <h2 id="title">Login</h2>
 
-  <input id="email" type="email" placeholder="Email">
+  <input id="email" placeholder="Email">
   <input id="password" type="password" placeholder="Password">
 
   <button onclick="handleAuth()">Continue</button>
 
-  <div class="switch" id="switchText">
-    New user? <span onclick="toggleMode()">Sign Up</span>
+  <div class="small">
+    <span class="link" onclick="toggleMode()">Switch Login/Signup</span>
   </div>
 
-  <div id="msg" class="msg"></div>
+  <div class="small">
+    <span class="link" onclick="forgotPassword()">Forgot Password?</span>
+  </div>
 
-</div>
+  <div id="msg" class="small"></div>
 
-<!-- DASHBOARD -->
-<div id="dash" class="card hidden">
-  <h2>Dashboard</h2>
-  <p id="info"></p>
-  <button onclick="logout()">Logout</button>
 </div>
 
 <script>
 
 //////////////////////////////////////////////////////
-// 🔥 SAFE SUPABASE SINGLETON
+// SUPABASE INIT (SAFE)
 //////////////////////////////////////////////////////
 
 window.sb = window.sb || window.supabase.createClient(
@@ -135,40 +98,29 @@ window.sb = window.sb || window.supabase.createClient(
 
 const sb = window.sb;
 
-//////////////////////////////////////////////////////
-// STATE (LOGIN OR SIGNUP)
-//////////////////////////////////////////////////////
-
 let mode = "login";
 
+//////////////////////////////////////////////////////
+// TOGGLE LOGIN / SIGNUP
+//////////////////////////////////////////////////////
+
 function toggleMode(){
-
   mode = (mode === "login") ? "signup" : "login";
-
-  const title = document.getElementById("title");
-  const switchText = document.getElementById("switchText");
-
-  if(mode === "signup"){
-    title.innerText = "Sign Up";
-    switchText.innerHTML = `Already have account? <span onclick="toggleMode()">Login</span>`;
-  } else {
-    title.innerText = "Login";
-    switchText.innerHTML = `New user? <span onclick="toggleMode()">Sign Up</span>`;
-  }
-
+  document.getElementById("title").innerText =
+    mode === "login" ? "Login" : "Sign Up";
   showMsg("");
 }
 
 //////////////////////////////////////////////////////
-// UI MESSAGE
+// MESSAGE
 //////////////////////////////////////////////////////
 
-function showMsg(text){
-  document.getElementById("msg").innerText = text;
+function showMsg(msg){
+  document.getElementById("msg").innerText = msg;
 }
 
 //////////////////////////////////////////////////////
-// AUTH HANDLER
+// LOGIN + SIGNUP
 //////////////////////////////////////////////////////
 
 async function handleAuth(){
@@ -182,21 +134,50 @@ async function handleAuth(){
   }
 
   if(mode === "login"){
-    login(email, password);
+
+    const { data, error } = await sb.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if(error){
+      showMsg(error.message);
+      return;
+    }
+
+    showMsg("Login success ✔");
+
   } else {
-    signup(email, password);
+
+    const { error } = await sb.auth.signUp({
+      email,
+      password
+    });
+
+    if(error){
+      showMsg(error.message);
+      return;
+    }
+
+    showMsg("Check email to confirm account ✔");
   }
 }
 
 //////////////////////////////////////////////////////
-// LOGIN
+// FORGOT PASSWORD
 //////////////////////////////////////////////////////
 
-async function login(email, password){
+async function forgotPassword(){
 
-  const { data, error } = await sb.auth.signInWithPassword({
-    email,
-    password
+  const email = document.getElementById("email").value;
+
+  if(!email){
+    showMsg("Enter email first");
+    return;
+  }
+
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: "https://e-gopaper.vercel.app/reset-password.html"
   });
 
   if(error){
@@ -204,59 +185,8 @@ async function login(email, password){
     return;
   }
 
-  showDashboard(data.user);
+  showMsg("Reset email sent ✔ Check inbox");
 }
-
-//////////////////////////////////////////////////////
-// SIGNUP
-//////////////////////////////////////////////////////
-
-async function signup(email, password){
-
-  const { error } = await sb.auth.signUp({
-    email,
-    password
-  });
-
-  if(error){
-    showMsg(error.message);
-    return;
-  }
-
-  showMsg("Check email to confirm account");
-}
-
-//////////////////////////////////////////////////////
-// DASHBOARD
-//////////////////////////////////////////////////////
-
-function showDashboard(user){
-
-  document.getElementById("auth").classList.add("hidden");
-  document.getElementById("dash").classList.remove("hidden");
-
-  document.getElementById("info").innerText =
-    "Logged in as: " + user.email;
-}
-
-//////////////////////////////////////////////////////
-// LOGOUT
-//////////////////////////////////////////////////////
-
-async function logout(){
-  await sb.auth.signOut();
-  location.reload();
-}
-
-//////////////////////////////////////////////////////
-// SESSION RESTORE
-//////////////////////////////////////////////////////
-
-sb.auth.getSession().then(({ data })=>{
-  if(data.session){
-    showDashboard(data.session.user);
-  }
-});
 
 </script>
 
