@@ -51,9 +51,7 @@ button{
   cursor:pointer;
 }
 
-button:hover{
-  background:#1e4fd6;
-}
+button:hover{ background:#1e4fd6; }
 
 .link{
   text-align:center;
@@ -86,7 +84,7 @@ button:hover{
 
 <div id="auth" class="card">
 
-  <h2 id="title">Login</h2>
+  <h2>e-Gopaper Login</h2>
 
   <input id="email" placeholder="Email" />
   <input id="password" type="password" placeholder="Password" />
@@ -129,8 +127,8 @@ function toggleMode(){
   document.getElementById("signupBox").style.display =
     mode === "signup" ? "block" : "none";
 
-  document.getElementById("title").innerText =
-    mode === "signup" ? "Sign Up" : "Login";
+  document.querySelector("h2").innerText =
+    mode === "signup" ? "e-Gopaper Sign Up" : "e-Gopaper Login";
 
   document.querySelector("button").innerText =
     mode === "signup" ? "Create Account" : "Login";
