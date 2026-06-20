@@ -11,7 +11,7 @@
 body{
   margin:0;
   font-family: Arial, sans-serif;
-  background:#f5f7fb;
+  background:#f4f6fb;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -19,22 +19,22 @@ body{
 }
 
 .card{
-  width:360px;
+  width:380px;
   background:white;
-  padding:30px;
+  padding:28px;
   border-radius:14px;
   box-shadow:0 10px 30px rgba(0,0,0,0.08);
 }
 
 h2{
-  margin-bottom:20px;
   text-align:center;
+  margin-bottom:18px;
 }
 
 input{
   width:100%;
-  padding:12px;
-  margin:8px 0;
+  padding:11px;
+  margin:7px 0;
   border:1px solid #ddd;
   border-radius:8px;
 }
@@ -42,13 +42,13 @@ input{
 button{
   width:100%;
   padding:12px;
-  background:#2563eb;
-  color:white;
+  margin-top:10px;
   border:none;
   border-radius:8px;
-  cursor:pointer;
-  margin-top:10px;
+  background:#2563eb;
+  color:white;
   font-weight:bold;
+  cursor:pointer;
 }
 
 button:hover{
@@ -57,7 +57,7 @@ button:hover{
 
 .link{
   text-align:center;
-  margin-top:15px;
+  margin-top:14px;
   font-size:14px;
 }
 
@@ -86,19 +86,23 @@ button:hover{
 
 <div id="auth" class="card">
 
-  <h2>e-Gopaper Login</h2>
+  <h2 id="title">Login</h2>
 
   <input id="email" placeholder="Email" />
   <input id="password" type="password" placeholder="Password" />
 
-  <input id="company" placeholder="Company Name (for signup)" />
-  <input id="fullname" placeholder="Full Name" />
-  <input id="phone" placeholder="Phone" />
+  <div id="signupBox" style="display:none;">
+    <input id="company" placeholder="Company Name" />
+    <input id="fullname" placeholder="Full Name" />
+    <input id="phone" placeholder="Phone" />
+  </div>
 
-  <button onclick="login()">Login</button>
+  <button onclick="handleAuth()">Login</button>
 
   <div class="link">
-    New user? <span onclick="signup()">Sign Up</span>
+    <span onclick="toggleMode()" id="toggleText">
+      New user? Sign Up
+    </span>
   </div>
 
   <div id="msg" class="small"></div>
@@ -117,13 +121,33 @@ const supabase = window.supabase.createClient(
   "sb_publishable_3UzY44NnUmIi795wKqr2Kg_G0LBpJp4"
 );
 
-function getInput(){
+let mode = "login";
+
+function toggleMode(){
+  mode = mode === "login" ? "signup" : "login";
+
+  document.getElementById("signupBox").style.display =
+    mode === "signup" ? "block" : "none";
+
+  document.getElementById("title").innerText =
+    mode === "signup" ? "Sign Up" : "Login";
+
+  document.querySelector("button").innerText =
+    mode === "signup" ? "Create Account" : "Login";
+
+  document.getElementById("toggleText").innerText =
+    mode === "signup"
+      ? "Already have account? Login"
+      : "New user? Sign Up";
+}
+
+function getData(){
   return {
-    email: document.getElementById("email").value,
-    password: document.getElementById("password").value,
-    company: document.getElementById("company").value,
-    fullname: document.getElementById("fullname").value,
-    phone: document.getElementById("phone").value
+    email: email.value,
+    password: password.value,
+    company: company.value,
+    fullname: fullname.value,
+    phone: phone.value
   };
 }
 
@@ -131,8 +155,13 @@ function show(msg){
   document.getElementById("msg").innerText = msg;
 }
 
+async function handleAuth(){
+  if(mode === "login") return login();
+  return signup();
+}
+
 async function signup(){
-  const d = getInput();
+  const d = getData();
 
   const { data, error } = await supabase.auth.signUp({
     email: d.email,
@@ -153,7 +182,7 @@ async function signup(){
 }
 
 async function login(){
-  const d = getInput();
+  const d = getData();
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email: d.email,
@@ -164,8 +193,8 @@ async function login(){
 
   await supabase.rpc("ensure_company_and_profile", {
     p_user_id: data.user.id,
-    p_company_name: d.company || "My Company",
-    p_full_name: d.fullname || "User",
+    p_company_name: "Default Company",
+    p_full_name: "User",
     p_phone: d.phone || "",
     p_email: d.email
   });
@@ -178,7 +207,7 @@ function loadDash(user){
   document.getElementById("dash").classList.remove("hidden");
 
   document.getElementById("info").innerText =
-    "Logged in as " + user.email;
+    "Logged in as: " + user.email;
 }
 
 async function logout(){
