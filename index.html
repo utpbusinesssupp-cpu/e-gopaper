@@ -84,18 +84,18 @@ button:hover{ background:#1e4fd6; }
 
 <div id="auth" class="card">
 
-  <h2>e-Gopaper Login</h2>
+  <h2 id="title">e-Gopaper Login</h2>
 
   <input id="email" placeholder="Email" />
   <input id="password" type="password" placeholder="Password" />
 
-  <div id="signupBox" style="display:none;">
+  <div id="signupBox" class="hidden">
     <input id="company" placeholder="Company Name" />
     <input id="fullname" placeholder="Full Name" />
     <input id="phone" placeholder="Phone" />
   </div>
 
-  <button onclick="handleAuth()">Login</button>
+  <button id="actionBtn" onclick="handleAuth()">Login</button>
 
   <div class="link">
     <span onclick="toggleMode()" id="toggleText">
@@ -122,30 +122,34 @@ const supabase = window.supabase.createClient(
 let mode = "login";
 
 function toggleMode(){
-  mode = mode === "login" ? "signup" : "login";
 
-  document.getElementById("signupBox").style.display =
-    mode === "signup" ? "block" : "none";
+  mode = (mode === "login") ? "signup" : "login";
 
-  document.querySelector("h2").innerText =
-    mode === "signup" ? "e-Gopaper Sign Up" : "e-Gopaper Login";
+  const signupBox = document.getElementById("signupBox");
+  const title = document.getElementById("title");
+  const btn = document.getElementById("actionBtn");
+  const toggle = document.getElementById("toggleText");
 
-  document.querySelector("button").innerText =
-    mode === "signup" ? "Create Account" : "Login";
-
-  document.getElementById("toggleText").innerText =
-    mode === "signup"
-      ? "Already have account? Login"
-      : "New user? Sign Up";
+  if(mode === "signup"){
+    signupBox.classList.remove("hidden");
+    title.innerText = "e-Gopaper Sign Up";
+    btn.innerText = "Create Account";
+    toggle.innerText = "Already have account? Login";
+  } else {
+    signupBox.classList.add("hidden");
+    title.innerText = "e-Gopaper Login";
+    btn.innerText = "Login";
+    toggle.innerText = "New user? Sign Up";
+  }
 }
 
 function getData(){
   return {
-    email: email.value,
-    password: password.value,
-    company: company.value,
-    fullname: fullname.value,
-    phone: phone.value
+    email: document.getElementById("email").value,
+    password: document.getElementById("password").value,
+    company: document.getElementById("company").value,
+    fullname: document.getElementById("fullname").value,
+    phone: document.getElementById("phone").value
   };
 }
 
@@ -159,6 +163,7 @@ async function handleAuth(){
 }
 
 async function signup(){
+
   const d = getData();
 
   const { data, error } = await supabase.auth.signUp({
@@ -166,7 +171,10 @@ async function signup(){
     password: d.password
   });
 
-  if(error) return show(error.message);
+  if(error){
+    show("❌ " + error.message);
+    return;
+  }
 
   await supabase.rpc("ensure_company_and_profile", {
     p_user_id: data.user.id,
@@ -176,10 +184,11 @@ async function signup(){
     p_email: d.email
   });
 
-  show("Check email to confirm account!");
+  show("✅ Check email to confirm account!");
 }
 
 async function login(){
+
   const d = getData();
 
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -187,7 +196,10 @@ async function login(){
     password: d.password
   });
 
-  if(error) return show(error.message);
+  if(error){
+    show("❌ " + error.message);
+    return;
+  }
 
   await supabase.rpc("ensure_company_and_profile", {
     p_user_id: data.user.id,
