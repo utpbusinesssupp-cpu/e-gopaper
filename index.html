@@ -10,193 +10,145 @@
 <style>
 body{
   margin:0;
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   background:#f4f6fb;
   display:flex;
-  align-items:center;
   justify-content:center;
+  align-items:center;
   height:100vh;
 }
 
 .card{
   width:360px;
-  background:white;
+  background:#fff;
   padding:25px;
   border-radius:12px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.08);
-}
-
-h2{
-  text-align:center;
+  box-shadow:0 10px 20px rgba(0,0,0,0.1);
 }
 
 input{
   width:100%;
   padding:10px;
   margin:8px 0;
-  border:1px solid #ddd;
-  border-radius:8px;
 }
 
 button{
   width:100%;
-  padding:11px;
-  margin-top:10px;
+  padding:10px;
   background:#2563eb;
-  color:white;
+  color:#fff;
   border:none;
-  border-radius:8px;
   cursor:pointer;
-  font-weight:bold;
-}
-
-button:hover{
-  background:#1e4fd6;
-}
-
-.link{
-  text-align:center;
-  margin-top:12px;
-  font-size:14px;
-  cursor:pointer;
-  color:#2563eb;
-}
-
-.msg{
-  font-size:12px;
-  text-align:center;
-  color:gray;
-  margin-top:10px;
 }
 
 .hidden{display:none;}
+.msg{font-size:12px;text-align:center;margin-top:10px;}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN CARD -->
 <div id="auth" class="card">
-
   <h2>e-Gopaper Login</h2>
 
-  <input id="email" type="email" placeholder="Email" />
-  <input id="password" type="password" placeholder="Password" />
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
 
-  <button onclick="handleLogin()">Login</button>
-
-  <div class="link" onclick="handleSignup()">
-    New user? Sign Up
-  </div>
+  <button onclick="login()">Login</button>
+  <button onclick="signup()">Sign Up</button>
 
   <div id="msg" class="msg"></div>
 </div>
 
-<!-- DASHBOARD -->
 <div id="dash" class="card hidden">
   <h2>Dashboard</h2>
-  <p id="userInfo"></p>
+  <p id="info"></p>
   <button onclick="logout()">Logout</button>
 </div>
 
 <script>
 
-/////////////////////////////////////////////////////
-// 🔥 SINGLE SUPABASE INSTANCE (NO DUPLICATION EVER)
-/////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+// 🔥 SAFE SINGLETON (NO DUPLICATION EVER)
+//////////////////////////////////////////////////////
 
-const supabase = window.supabase.createClient(
+window.sb = window.sb || window.supabase.createClient(
   "https://duznidzlfvadjcoxynjh.supabase.co",
   "sb_publishable_3UzY44NnUmIi795wKqr2Kg_G0LBpJp4"
 );
 
-/////////////////////////////////////////////////////
-// UI HELPERS
-/////////////////////////////////////////////////////
+const sb = window.sb;
 
-function showMsg(msg){
-  document.getElementById("msg").innerText = msg;
+//////////////////////////////////////////////////////
+// LOGIN
+//////////////////////////////////////////////////////
+
+async function login(){
+
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if(!email || !password){
+    msg.innerText = "Email & password required";
+    return;
+  }
+
+  const { data, error } = await sb.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if(error){
+    msg.innerText = error.message;
+    return;
+  }
+
+  showDash(data.user);
 }
 
-function showDashboard(user){
+//////////////////////////////////////////////////////
+// SIGNUP
+//////////////////////////////////////////////////////
+
+async function signup(){
+
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const { error } = await sb.auth.signUp({
+    email,
+    password
+  });
+
+  msg.innerText = error ? error.message : "Check email!";
+}
+
+//////////////////////////////////////////////////////
+// DASHBOARD
+//////////////////////////////////////////////////////
+
+function showDash(user){
   document.getElementById("auth").classList.add("hidden");
   document.getElementById("dash").classList.remove("hidden");
-
-  document.getElementById("userInfo").innerText =
-    "Logged in as: " + user.email;
+  document.getElementById("info").innerText = user.email;
 }
 
-/////////////////////////////////////////////////////
-// LOGIN
-/////////////////////////////////////////////////////
-
-async function handleLogin(){
-
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  // validation (THIS FIXES YOUR "missing email/password" ISSUE)
-  if(!email || !password){
-    showMsg("❌ Email and Password required");
-    return;
-  }
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if(error){
-    showMsg("❌ " + error.message);
-    return;
-  }
-
-  showDashboard(data.user);
-}
-
-/////////////////////////////////////////////////////
-// SIGNUP
-/////////////////////////////////////////////////////
-
-async function handleSignup(){
-
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  if(!email || !password){
-    showMsg("❌ Email and Password required");
-    return;
-  }
-
-  const { error } = await supabase.auth.signUp({
-    email,
-    password
-  });
-
-  if(error){
-    showMsg("❌ " + error.message);
-    return;
-  }
-
-  showMsg("✅ Check your email to confirm account");
-}
-
-/////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
 // LOGOUT
-/////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
 
 async function logout(){
-  await supabase.auth.signOut();
+  await sb.auth.signOut();
   location.reload();
 }
 
-/////////////////////////////////////////////////////
-// SESSION RESTORE
-/////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+// SESSION
+//////////////////////////////////////////////////////
 
-supabase.auth.getSession().then(({ data })=>{
+sb.auth.getSession().then(({ data })=>{
   if(data.session){
-    showDashboard(data.session.user);
+    showDash(data.session.user);
   }
 });
 
