@@ -3,74 +3,111 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>e-Gopaper SaaS</title>
+<title>e-Gopaper</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-body {
+body{
+  margin:0;
   font-family: Arial, sans-serif;
-  margin: 0;
-  background: #f4f6f9;
+  background:#f5f7fb;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
 }
 
-.container {
-  max-width: 420px;
-  margin: 60px auto;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+.card{
+  width:360px;
+  background:white;
+  padding:30px;
+  border-radius:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.08);
 }
 
-input {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
+h2{
+  margin-bottom:20px;
+  text-align:center;
 }
 
-button {
-  width: 100%;
-  padding: 10px;
-  background: #1e88e5;
-  color: white;
-  border: none;
-  cursor: pointer;
-  margin-top: 10px;
+input{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border:1px solid #ddd;
+  border-radius:8px;
 }
 
-.hidden { display:none; }
+button{
+  width:100%;
+  padding:12px;
+  background:#2563eb;
+  color:white;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  margin-top:10px;
+  font-weight:bold;
+}
 
-.dashboard {
-  max-width: 600px;
-  margin: 60px auto;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
+button:hover{
+  background:#1e4fd6;
+}
+
+.link{
+  text-align:center;
+  margin-top:15px;
+  font-size:14px;
+}
+
+.link span{
+  color:#2563eb;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.small{
+  font-size:12px;
+  color:gray;
+  text-align:center;
+  margin-top:10px;
+}
+
+.hidden{display:none;}
+
+.dashboard{
+  text-align:center;
 }
 </style>
 </head>
 
 <body>
 
-<div id="authBox" class="container">
+<div id="auth" class="card">
+
   <h2>e-Gopaper Login</h2>
 
   <input id="email" placeholder="Email" />
   <input id="password" type="password" placeholder="Password" />
+
   <input id="company" placeholder="Company Name (for signup)" />
   <input id="fullname" placeholder="Full Name" />
   <input id="phone" placeholder="Phone" />
 
-  <button onclick="signup()">Sign Up</button>
   <button onclick="login()">Login</button>
 
-  <p id="msg"></p>
+  <div class="link">
+    New user? <span onclick="signup()">Sign Up</span>
+  </div>
+
+  <div id="msg" class="small"></div>
+
 </div>
 
-<div id="dashboard" class="dashboard hidden">
+<div id="dash" class="card hidden dashboard">
   <h2>Dashboard</h2>
-  <p id="userInfo"></p>
+  <p id="info"></p>
   <button onclick="logout()">Logout</button>
 </div>
 
@@ -80,79 +117,78 @@ const supabase = window.supabase.createClient(
   "sb_publishable_3UzY44NnUmIi795wKqr2Kg_G0LBpJp4"
 );
 
-async function signup() {
-  const email = emailInput().email;
-  const password = emailInput().password;
-
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password
-  });
-
-  if (error) return show(error.message);
-
-  await ensureProfile(data.user);
-  show("Check email to confirm account.");
-}
-
-async function login() {
-  const email = emailInput().email;
-  const password = emailInput().password;
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if (error) return show(error.message);
-
-  await ensureProfile(data.user);
-  loadDashboard(data.user);
-}
-
-async function ensureProfile(user) {
-  const company = document.getElementById("company").value;
-  const fullname = document.getElementById("fullname").value;
-  const phone = document.getElementById("phone").value;
-
-  if (!company || !fullname) return;
-
-  await supabase.rpc("ensure_company_and_profile", {
-    p_user_id: user.id,
-    p_company_name: company,
-    p_full_name: fullname,
-    p_phone: phone,
-    p_email: user.email
-  });
-}
-
-function loadDashboard(user) {
-  document.getElementById("authBox").classList.add("hidden");
-  document.getElementById("dashboard").classList.remove("hidden");
-
-  document.getElementById("userInfo").innerText =
-    "Logged in as: " + user.email;
-}
-
-async function logout() {
-  await supabase.auth.signOut();
-  location.reload();
+function getInput(){
+  return {
+    email: document.getElementById("email").value,
+    password: document.getElementById("password").value,
+    company: document.getElementById("company").value,
+    fullname: document.getElementById("fullname").value,
+    phone: document.getElementById("phone").value
+  };
 }
 
 function show(msg){
   document.getElementById("msg").innerText = msg;
 }
 
-function emailInput(){
-  return {
-    email: document.getElementById("email").value,
-    password: document.getElementById("password").value
-  };
+async function signup(){
+  const d = getInput();
+
+  const { data, error } = await supabase.auth.signUp({
+    email: d.email,
+    password: d.password
+  });
+
+  if(error) return show(error.message);
+
+  await supabase.rpc("ensure_company_and_profile", {
+    p_user_id: data.user.id,
+    p_company_name: d.company,
+    p_full_name: d.fullname,
+    p_phone: d.phone,
+    p_email: d.email
+  });
+
+  show("Check email to confirm account!");
 }
 
-supabase.auth.getSession().then(({ data }) => {
-  if (data.session) {
-    loadDashboard(data.session.user);
+async function login(){
+  const d = getInput();
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: d.email,
+    password: d.password
+  });
+
+  if(error) return show(error.message);
+
+  await supabase.rpc("ensure_company_and_profile", {
+    p_user_id: data.user.id,
+    p_company_name: d.company || "My Company",
+    p_full_name: d.fullname || "User",
+    p_phone: d.phone || "",
+    p_email: d.email
+  });
+
+  loadDash(data.user);
+}
+
+function loadDash(user){
+  document.getElementById("auth").classList.add("hidden");
+  document.getElementById("dash").classList.remove("hidden");
+
+  document.getElementById("info").innerText =
+    "Logged in as " + user.email;
+}
+
+async function logout(){
+  await supabase.auth.signOut();
+  location.reload();
+}
+
+supabase.auth.getSession().then(({ data })=>{
+  if(data.session){
+    loadDash(data.session.user);
   }
 });
 </script>
