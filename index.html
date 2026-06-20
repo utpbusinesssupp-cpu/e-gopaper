@@ -1,42 +1,204 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>e-Gopaper</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body{
+  margin:0;
+  font-family: Arial, sans-serif;
+  background:#f4f6fb;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+}
+
+.card{
+  width:360px;
+  background:white;
+  padding:25px;
+  border-radius:12px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
+
+h2{
+  text-align:center;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  border:1px solid #ddd;
+  border-radius:8px;
+}
+
+button{
+  width:100%;
+  padding:11px;
+  margin-top:10px;
+  background:#2563eb;
+  color:white;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+button:hover{
+  background:#1e4fd6;
+}
+
+.link{
+  text-align:center;
+  margin-top:12px;
+  font-size:14px;
+  cursor:pointer;
+  color:#2563eb;
+}
+
+.msg{
+  font-size:12px;
+  text-align:center;
+  color:gray;
+  margin-top:10px;
+}
+
+.hidden{display:none;}
+</style>
 </head>
+
 <body>
 
-<input id="email">
-<input id="password">
+<!-- LOGIN CARD -->
+<div id="auth" class="card">
 
-<button onclick="login()">Login</button>
-<span onclick="signup()">Signup</span>
+  <h2>e-Gopaper Login</h2>
 
-<p id="msg"></p>
+  <input id="email" type="email" placeholder="Email" />
+  <input id="password" type="password" placeholder="Password" />
+
+  <button onclick="handleLogin()">Login</button>
+
+  <div class="link" onclick="handleSignup()">
+    New user? Sign Up
+  </div>
+
+  <div id="msg" class="msg"></div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dash" class="card hidden">
+  <h2>Dashboard</h2>
+  <p id="userInfo"></p>
+  <button onclick="logout()">Logout</button>
+</div>
 
 <script>
+
+/////////////////////////////////////////////////////
+// 🔥 SINGLE SUPABASE INSTANCE (NO DUPLICATION EVER)
+/////////////////////////////////////////////////////
 
 const supabase = window.supabase.createClient(
   "https://duznidzlfvadjcoxynjh.supabase.co",
   "sb_publishable_3UzY44NnUmIi795wKqr2Kg_G0LBpJp4"
 );
 
-async function login(){
-  const { error } = await supabase.auth.signInWithPassword({
-    email: email.value,
-    password: password.value
-  });
+/////////////////////////////////////////////////////
+// UI HELPERS
+/////////////////////////////////////////////////////
 
-  msg.innerText = error ? error.message : "Logged in";
+function showMsg(msg){
+  document.getElementById("msg").innerText = msg;
 }
 
-async function signup(){
+function showDashboard(user){
+  document.getElementById("auth").classList.add("hidden");
+  document.getElementById("dash").classList.remove("hidden");
+
+  document.getElementById("userInfo").innerText =
+    "Logged in as: " + user.email;
+}
+
+/////////////////////////////////////////////////////
+// LOGIN
+/////////////////////////////////////////////////////
+
+async function handleLogin(){
+
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  // validation (THIS FIXES YOUR "missing email/password" ISSUE)
+  if(!email || !password){
+    showMsg("❌ Email and Password required");
+    return;
+  }
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if(error){
+    showMsg("❌ " + error.message);
+    return;
+  }
+
+  showDashboard(data.user);
+}
+
+/////////////////////////////////////////////////////
+// SIGNUP
+/////////////////////////////////////////////////////
+
+async function handleSignup(){
+
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if(!email || !password){
+    showMsg("❌ Email and Password required");
+    return;
+  }
+
   const { error } = await supabase.auth.signUp({
-    email: email.value,
-    password: password.value
+    email,
+    password
   });
 
-  msg.innerText = error ? error.message : "Check email";
+  if(error){
+    showMsg("❌ " + error.message);
+    return;
+  }
+
+  showMsg("✅ Check your email to confirm account");
 }
+
+/////////////////////////////////////////////////////
+// LOGOUT
+/////////////////////////////////////////////////////
+
+async function logout(){
+  await supabase.auth.signOut();
+  location.reload();
+}
+
+/////////////////////////////////////////////////////
+// SESSION RESTORE
+/////////////////////////////////////////////////////
+
+supabase.auth.getSession().then(({ data })=>{
+  if(data.session){
+    showDashboard(data.session.user);
+  }
+});
 
 </script>
 
