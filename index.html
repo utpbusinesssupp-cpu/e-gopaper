@@ -1,1 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>e-Gopaper SaaS</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f4f6f9;
+}
+
+.container {
+  max-width: 420px;
+  margin: 60px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  background: #1e88e5;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.hidden { display:none; }
+
+.dashboard {
+  max-width: 600px;
+  margin: 60px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="authBox" class="container">
+  <h2>e-Gopaper Login</h2>
+
+  <input id="email" placeholder="Email" />
+  <input id="password" type="password" placeholder="Password" />
+  <input id="company" placeholder="Company Name (for signup)" />
+  <input id="fullname" placeholder="Full Name" />
+  <input id="phone" placeholder="Phone" />
+
+  <button onclick="signup()">Sign Up</button>
+  <button onclick="login()">Login</button>
+
+  <p id="msg"></p>
+</div>
+
+<div id="dashboard" class="dashboard hidden">
+  <h2>Dashboard</h2>
+  <p id="userInfo"></p>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+const supabase = window.supabase.createClient(
+  "https://duznidzlfvadjcoxynjh.supabase.co",
+  "sb_publishable_3UzY44NnUmIi795wKqr2Kg_G0LBpJp4"
+);
+
+async function signup() {
+  const email = emailInput().email;
+  const password = emailInput().password;
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password
+  });
+
+  if (error) return show(error.message);
+
+  await ensureProfile(data.user);
+  show("Check email to confirm account.");
+}
+
+async function login() {
+  const email = emailInput().email;
+  const password = emailInput().password;
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) return show(error.message);
+
+  await ensureProfile(data.user);
+  loadDashboard(data.user);
+}
+
+async function ensureProfile(user) {
+  const company = document.getElementById("company").value;
+  const fullname = document.getElementById("fullname").value;
+  const phone = document.getElementById("phone").value;
+
+  if (!company || !fullname) return;
+
+  await supabase.rpc("ensure_company_and_profile", {
+    p_user_id: user.id,
+    p_company_name: company,
+    p_full_name: fullname,
+    p_phone: phone,
+    p_email: user.email
+  });
+}
+
+function loadDashboard(user) {
+  document.getElementById("authBox").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+
+  document.getElementById("userInfo").innerText =
+    "Logged in as: " + user.email;
+}
+
+async function logout() {
+  await supabase.auth.signOut();
+  location.reload();
+}
+
+function show(msg){
+  document.getElementById("msg").innerText = msg;
+}
+
+function emailInput(){
+  return {
+    email: document.getElementById("email").value,
+    password: document.getElementById("password").value
+  };
+}
+
+supabase.auth.getSession().then(({ data }) => {
+  if (data.session) {
+    loadDashboard(data.session.user);
+  }
+});
+</script>
+
+</body>
+</html>
