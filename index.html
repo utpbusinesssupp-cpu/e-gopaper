@@ -8,57 +8,147 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
+/* =======================
+   GLOBAL UI
+======================= */
+
 body{
   margin:0;
-  font-family: Arial;
-  background:#f4f6fb;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg,#e0e7ff,#f4f6fb);
   display:flex;
-  justify-content:center;
   align-items:center;
+  justify-content:center;
   height:100vh;
 }
 
+/* =======================
+   CARD
+======================= */
+
 .card{
-  width:360px;
-  background:#fff;
-  padding:25px;
-  border-radius:12px;
-  box-shadow:0 10px 20px rgba(0,0,0,0.1);
+  width:380px;
+  background:white;
+  padding:30px;
+  border-radius:16px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.12);
+  text-align:center;
 }
+
+/* =======================
+   TITLE
+======================= */
+
+h2{
+  margin-bottom:18px;
+  font-size:22px;
+  font-weight:bold;
+  color:#1f2937;
+}
+
+/* =======================
+   INPUTS
+======================= */
 
 input{
   width:100%;
-  padding:10px;
+  padding:12px;
   margin:8px 0;
+  border:1px solid #ddd;
+  border-radius:10px;
+  outline:none;
 }
+
+input:focus{
+  border-color:#2563eb;
+  box-shadow:0 0 0 2px rgba(37,99,235,0.15);
+}
+
+/* =======================
+   BUTTONS
+======================= */
 
 button{
   width:100%;
-  padding:10px;
+  padding:12px;
+  margin-top:10px;
   background:#2563eb;
   color:#fff;
   border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:bold;
+  transition:0.2s;
+}
+
+button:hover{
+  background:#1e4fd6;
+  transform:scale(1.02);
+}
+
+/* =======================
+   MESSAGE
+======================= */
+
+.msg{
+  font-size:12px;
+  color:gray;
+  margin-top:10px;
+}
+
+/* =======================
+   SIGNUP TEXT
+======================= */
+
+.link{
+  margin-top:14px;
+  font-size:14px;
+  color:#6b7280;
+}
+
+.link span{
+  color:#2563eb;
+  font-weight:bold;
   cursor:pointer;
 }
 
+/* =======================
+   HIDDEN
+======================= */
+
 .hidden{display:none;}
-.msg{font-size:12px;text-align:center;margin-top:10px;}
+
 </style>
 </head>
 
 <body>
 
+<!-- =======================
+     AUTH CARD
+======================= -->
+
 <div id="auth" class="card">
+
   <h2>e-Gopaper Login</h2>
 
-  <input id="email" placeholder="Email">
+  <input id="email" type="email" placeholder="Email">
   <input id="password" type="password" placeholder="Password">
 
   <button onclick="login()">Login</button>
   <button onclick="signup()">Sign Up</button>
 
+  <div class="link">
+    New user? <span onclick="signup()">Sign Up</span>
+  </div>
+
   <div id="msg" class="msg"></div>
+
 </div>
+
+<!-- =======================
+     DASHBOARD
+======================= -->
 
 <div id="dash" class="card hidden">
   <h2>Dashboard</h2>
@@ -69,7 +159,7 @@ button{
 <script>
 
 //////////////////////////////////////////////////////
-// 🔥 SAFE SINGLETON (NO DUPLICATION EVER)
+// 🔥 SAFE SUPABASE SINGLETON (NO DUPLICATION EVER)
 //////////////////////////////////////////////////////
 
 window.sb = window.sb || window.supabase.createClient(
@@ -78,6 +168,14 @@ window.sb = window.sb || window.supabase.createClient(
 );
 
 const sb = window.sb;
+
+//////////////////////////////////////////////////////
+// UI HELPER
+//////////////////////////////////////////////////////
+
+function showMsg(text){
+  document.getElementById("msg").innerText = text;
+}
 
 //////////////////////////////////////////////////////
 // LOGIN
@@ -89,7 +187,7 @@ async function login(){
   const password = document.getElementById("password").value;
 
   if(!email || !password){
-    msg.innerText = "Email & password required";
+    showMsg("Email and password required");
     return;
   }
 
@@ -99,11 +197,11 @@ async function login(){
   });
 
   if(error){
-    msg.innerText = error.message;
+    showMsg(error.message);
     return;
   }
 
-  showDash(data.user);
+  showDashboard(data.user);
 }
 
 //////////////////////////////////////////////////////
@@ -115,22 +213,35 @@ async function signup(){
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
+  if(!email || !password){
+    showMsg("Email and password required");
+    return;
+  }
+
   const { error } = await sb.auth.signUp({
     email,
     password
   });
 
-  msg.innerText = error ? error.message : "Check email!";
+  if(error){
+    showMsg(error.message);
+    return;
+  }
+
+  showMsg("Check email for confirmation");
 }
 
 //////////////////////////////////////////////////////
 // DASHBOARD
 //////////////////////////////////////////////////////
 
-function showDash(user){
+function showDashboard(user){
+
   document.getElementById("auth").classList.add("hidden");
   document.getElementById("dash").classList.remove("hidden");
-  document.getElementById("info").innerText = user.email;
+
+  document.getElementById("info").innerText =
+    "Logged in as: " + user.email;
 }
 
 //////////////////////////////////////////////////////
@@ -143,12 +254,12 @@ async function logout(){
 }
 
 //////////////////////////////////////////////////////
-// SESSION
+// SESSION RESTORE
 //////////////////////////////////////////////////////
 
 sb.auth.getSession().then(({ data })=>{
   if(data.session){
-    showDash(data.session.user);
+    showDashboard(data.session.user);
   }
 });
 
