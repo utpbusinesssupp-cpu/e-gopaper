@@ -9,10 +9,6 @@
 
 <style>
 
-/* =======================
-   GLOBAL UI
-======================= */
-
 body{
   margin:0;
   font-family: Arial, sans-serif;
@@ -23,10 +19,7 @@ body{
   height:100vh;
 }
 
-/* =======================
-   CARD
-======================= */
-
+/* CARD */
 .card{
   width:380px;
   background:white;
@@ -36,21 +29,13 @@ body{
   text-align:center;
 }
 
-/* =======================
-   TITLE
-======================= */
-
+/* TITLE */
 h2{
   margin-bottom:18px;
-  font-size:22px;
-  font-weight:bold;
   color:#1f2937;
 }
 
-/* =======================
-   INPUTS
-======================= */
-
+/* INPUTS */
 input{
   width:100%;
   padding:12px;
@@ -65,16 +50,13 @@ input:focus{
   box-shadow:0 0 0 2px rgba(37,99,235,0.15);
 }
 
-/* =======================
-   BUTTONS
-======================= */
-
+/* BUTTON */
 button{
   width:100%;
   padding:12px;
   margin-top:10px;
   background:#2563eb;
-  color:#fff;
+  color:white;
   border:none;
   border-radius:10px;
   cursor:pointer;
@@ -87,36 +69,27 @@ button:hover{
   transform:scale(1.02);
 }
 
-/* =======================
-   MESSAGE
-======================= */
+/* SWITCH LINK */
+.switch{
+  margin-top:15px;
+  font-size:14px;
+  color:#6b7280;
+}
 
+.switch span{
+  color:#2563eb;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+/* MESSAGE */
 .msg{
   font-size:12px;
   color:gray;
   margin-top:10px;
 }
 
-/* =======================
-   SIGNUP TEXT
-======================= */
-
-.link{
-  margin-top:14px;
-  font-size:14px;
-  color:#6b7280;
-}
-
-.link span{
-  color:#2563eb;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-/* =======================
-   HIDDEN
-======================= */
-
+/* HIDE */
 .hidden{display:none;}
 
 </style>
@@ -124,32 +97,25 @@ button:hover{
 
 <body>
 
-<!-- =======================
-     AUTH CARD
-======================= -->
-
+<!-- AUTH CARD -->
 <div id="auth" class="card">
 
-  <h2>e-Gopaper Login</h2>
+  <h2 id="title">Login</h2>
 
   <input id="email" type="email" placeholder="Email">
   <input id="password" type="password" placeholder="Password">
 
-  <button onclick="login()">Login</button>
-  <button onclick="signup()">Sign Up</button>
+  <button onclick="handleAuth()">Continue</button>
 
-  <div class="link">
-    New user? <span onclick="signup()">Sign Up</span>
+  <div class="switch" id="switchText">
+    New user? <span onclick="toggleMode()">Sign Up</span>
   </div>
 
   <div id="msg" class="msg"></div>
 
 </div>
 
-<!-- =======================
-     DASHBOARD
-======================= -->
-
+<!-- DASHBOARD -->
 <div id="dash" class="card hidden">
   <h2>Dashboard</h2>
   <p id="info"></p>
@@ -159,7 +125,7 @@ button:hover{
 <script>
 
 //////////////////////////////////////////////////////
-// 🔥 SAFE SUPABASE SINGLETON (NO DUPLICATION EVER)
+// 🔥 SAFE SUPABASE SINGLETON
 //////////////////////////////////////////////////////
 
 window.sb = window.sb || window.supabase.createClient(
@@ -170,7 +136,31 @@ window.sb = window.sb || window.supabase.createClient(
 const sb = window.sb;
 
 //////////////////////////////////////////////////////
-// UI HELPER
+// STATE (LOGIN OR SIGNUP)
+//////////////////////////////////////////////////////
+
+let mode = "login";
+
+function toggleMode(){
+
+  mode = (mode === "login") ? "signup" : "login";
+
+  const title = document.getElementById("title");
+  const switchText = document.getElementById("switchText");
+
+  if(mode === "signup"){
+    title.innerText = "Sign Up";
+    switchText.innerHTML = `Already have account? <span onclick="toggleMode()">Login</span>`;
+  } else {
+    title.innerText = "Login";
+    switchText.innerHTML = `New user? <span onclick="toggleMode()">Sign Up</span>`;
+  }
+
+  showMsg("");
+}
+
+//////////////////////////////////////////////////////
+// UI MESSAGE
 //////////////////////////////////////////////////////
 
 function showMsg(text){
@@ -178,10 +168,10 @@ function showMsg(text){
 }
 
 //////////////////////////////////////////////////////
-// LOGIN
+// AUTH HANDLER
 //////////////////////////////////////////////////////
 
-async function login(){
+async function handleAuth(){
 
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
@@ -190,6 +180,19 @@ async function login(){
     showMsg("Email and password required");
     return;
   }
+
+  if(mode === "login"){
+    login(email, password);
+  } else {
+    signup(email, password);
+  }
+}
+
+//////////////////////////////////////////////////////
+// LOGIN
+//////////////////////////////////////////////////////
+
+async function login(email, password){
 
   const { data, error } = await sb.auth.signInWithPassword({
     email,
@@ -208,15 +211,7 @@ async function login(){
 // SIGNUP
 //////////////////////////////////////////////////////
 
-async function signup(){
-
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  if(!email || !password){
-    showMsg("Email and password required");
-    return;
-  }
+async function signup(email, password){
 
   const { error } = await sb.auth.signUp({
     email,
@@ -228,7 +223,7 @@ async function signup(){
     return;
   }
 
-  showMsg("Check email for confirmation");
+  showMsg("Check email to confirm account");
 }
 
 //////////////////////////////////////////////////////
