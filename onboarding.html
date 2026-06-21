@@ -148,7 +148,6 @@ async function saveCompany(){
   const industry_type = document.getElementById("industry_type").value;
   const tin = document.getElementById("tin").value;
   const phone = document.getElementById("phone").value;
-  const email = document.getElementById("email").value;
   const address = document.getElementById("address").value;
   const currency_code = document.getElementById("currency_code").value;
 
@@ -159,12 +158,11 @@ async function saveCompany(){
 
   const { error } = await sb.from("companies").insert([{
     user_id: user.id,
-    email: user.email,
     company_name,
     industry_type,
     tin,
     phone,
-    email,
+    email: user.email,
     address,
     currency_code
   }]);
@@ -176,7 +174,7 @@ async function saveCompany(){
 
   showMsg("Company saved ✔ Redirecting...");
 
-  setTimeout(()=>{
+  setTimeout(() => {
     window.location.href = "dashboard.html";
   }, 1500);
 
