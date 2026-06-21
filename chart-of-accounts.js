@@ -37,7 +37,7 @@ async function init() {
   const { data: company, error: companyError } = await sb
     .from("companies")
     .select("*")
-    .eq("id", user.id)
+    .eq("user_id", user.id)
     .single();
 
   // NOTE: if you store company_id differently adjust later
