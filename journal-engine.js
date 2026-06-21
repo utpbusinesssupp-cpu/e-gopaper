@@ -9,7 +9,41 @@ const sb = window.supabase.createClient(
 
 
 //////////////////////////////////////////////////////
-// MAIN ENTRY POINT (FROM UI)
+// CLASSIFICATION ENGINE (PHASE 4 STEP 2)
+//////////////////////////////////////////////////////
+
+function classifyTransaction(description, type) {
+
+  let classification = "NON_EBM";
+
+  const desc = (description || "").toLowerCase();
+
+  // PAYE
+  if (desc.includes("salary")) {
+    classification = "PAYE";
+  }
+
+  // WITHHOLDING TAX
+  else if (desc.includes("service")) {
+    classification = "WITHHOLDING_TAX";
+  }
+
+  // EBM
+  else if (desc.includes("ebm")) {
+    classification = "EBM";
+  }
+
+  // EXPENSE DEFAULT
+  else if (type === "expense") {
+    classification = "NON_EBM";
+  }
+
+  return classification;
+}
+
+
+//////////////////////////////////////////////////////
+// MAIN ENTRY POINT
 //////////////////////////////////////////////////////
 
 async function submitTransaction() {
@@ -26,8 +60,10 @@ async function submitTransaction() {
     return;
   }
 
+
   const { data: sessionData } = await sb.auth.getSession();
   const user = sessionData.session.user;
+
 
   const { data: company } = await sb
     .from("companies")
@@ -37,70 +73,71 @@ async function submitTransaction() {
 
 
   //////////////////////////////////////////////////////
-  // BUILD DOUBLE ENTRY AUTOMATICALLY
+  // STEP 2 → CLASSIFY TRANSACTION (NEW)
+  //////////////////////////////////////////////////////
+
+  const classification = classifyTransaction(description, type);
+
+  console.log("Classification:", classification);
+
+
+  //////////////////////////////////////////////////////
+  // BUILD DOUBLE ENTRY
   //////////////////////////////////////////////////////
 
   let lines = [];
 
   if (type === "expense") {
 
-    // Dr Expense
-    // Cr Cash/Bank
-
     lines = [
       {
         account_id: accountId,
         debit: amount,
         credit: 0,
-        description: description
+        description
       },
       {
         account_id: await getCashAccount(company.id),
         debit: 0,
         credit: amount,
-        description: description
+        description
       }
     ];
   }
 
   else if (type === "income") {
 
-    // Dr Cash/Bank
-    // Cr Revenue
-
     lines = [
       {
         account_id: await getCashAccount(company.id),
         debit: amount,
         credit: 0,
-        description: description
+        description
       },
       {
         account_id: accountId,
         debit: 0,
         credit: amount,
-        description: description
+        description
       }
     ];
   }
 
   else if (type === "transfer") {
 
-    // simple transfer (same logic example)
-
     lines = [
       {
         account_id: accountId,
         debit: amount,
         credit: 0,
-        description: description
+        description
       }
     ];
   }
 
 
   //////////////////////////////////////////////////////
-  // CALL ENGINE
+  // SAVE JOURNAL ENTRY
   //////////////////////////////////////////////////////
 
   try {
@@ -108,7 +145,7 @@ async function submitTransaction() {
     await createJournalEntry({
       companyId: company.id,
       entryDate: date,
-      description,
+      description: description + " [" + classification + "]",
       reference,
       lines
     });
@@ -122,7 +159,7 @@ async function submitTransaction() {
 
 
 //////////////////////////////////////////////////////
-// GET CASH ACCOUNT (DEFAULT)
+// CASH ACCOUNT
 //////////////////////////////////////////////////////
 
 async function getCashAccount(companyId) {
@@ -139,7 +176,7 @@ async function getCashAccount(companyId) {
 
 
 //////////////////////////////////////////////////////
-// CREATE JOURNAL ENTRY (CORE FUNCTION)
+// JOURNAL ENGINE CORE
 //////////////////////////////////////////////////////
 
 async function createJournalEntry({
@@ -150,7 +187,6 @@ async function createJournalEntry({
   lines
 }) {
 
-  // VALIDATION
   let totalDebit = 0;
   let totalCredit = 0;
 
@@ -164,7 +200,6 @@ async function createJournalEntry({
   }
 
 
-  // HEADER
   const { data: entry, error } = await sb
     .from("journal_entries")
     .insert([{
@@ -180,7 +215,6 @@ async function createJournalEntry({
   if (error) throw new Error(error.message);
 
 
-  // LINES
   const formatted = lines.map(l => ({
     journal_entry_id: entry.id,
     company_id: companyId,
