@@ -154,28 +154,7 @@ async function handleAuth(){
       return;
     }
 
-    const user = data.user;
-
-// CHECK IF COMPANY EXISTS
-const { data: companyData, error } = await sb
-  .from("companies")
-  .select("*")
-  .eq("user_id", user.id)
-  .maybeSingle();
-
-if (error) {
-  showMsg(error.message);
-  return;
-}
-
-// IF NO COMPANY → ONBOARDING
-if (!companyData) {
-  window.location.href = "onboarding.html";
-} 
-// IF COMPANY EXISTS → DASHBOARD
-else {
-  window.location.href = "dashboard.html";
-}
+    showDashboard(data.user);
 
   } else {
 
