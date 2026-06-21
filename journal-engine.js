@@ -8,32 +8,24 @@ const sb = window.supabase.createClient(
 );
 
 //////////////////////////////////////////////////////
-// 🧠 PHASE 4 STEP 2 — CLASSIFICATION ENGINE
+// 🧠 CLASSIFICATION ENGINE (PHASE 4)
 //////////////////////////////////////////////////////
 
 function classifyTransaction(description, type) {
 
-  let classification = "NON_EBM";
   const desc = (description || "").toLowerCase();
 
-  if (desc.includes("salary")) {
-    classification = "PAYE";
-  } 
-  else if (desc.includes("service")) {
-    classification = "WITHHOLDING_TAX";
-  } 
-  else if (desc.includes("ebm")) {
-    classification = "EBM";
-  } 
-  else if (type === "expense") {
-    classification = "NON_EBM";
-  }
+  if (desc.includes("salary")) return "PAYE";
+  if (desc.includes("service")) return "WITHHOLDING_TAX";
+  if (desc.includes("ebm")) return "EBM";
 
-  return classification;
+  if (type === "expense") return "NON_EBM";
+
+  return "GENERAL";
 }
 
 //////////////////////////////////////////////////////
-// 🧠 PHASE 4 STEP 3 — SAVE CLASSIFICATION
+// 🧠 SAVE CLASSIFICATION
 //////////////////////////////////////////////////////
 
 async function saveClassification({
@@ -56,60 +48,55 @@ async function saveClassification({
 }
 
 //////////////////////////////////////////////////////
-// 🧠 PHASE 5 STEP 1 — AI ACCOUNT SUGGESTION ENGINE
+// 🧠 AI ACCOUNT SUGGESTION (PHASE 5)
 //////////////////////////////////////////////////////
 
-function suggestAccount(description, type) {
+function suggestAccount(description) {
 
   const desc = (description || "").toLowerCase();
 
-  if (desc.includes("salary")) return { account_code: "5001", reason: "Payroll detected" };
-  if (desc.includes("rent")) return { account_code: "6001", reason: "Rent detected" };
-  if (desc.includes("fuel")) return { account_code: "6002", reason: "Transport detected" };
+  if (desc.includes("salary")) return { code: "5001", reason: "Payroll" };
+  if (desc.includes("rent")) return { code: "6001", reason: "Rent expense" };
+  if (desc.includes("fuel")) return { code: "6002", reason: "Transport expense" };
 
-  return { account_code: "1000", reason: "Default cash mapping" };
+  return { code: "1000", reason: "Default cash account" };
 }
 
 //////////////////////////////////////////////////////
-// 🧠 PHASE 5 STEP 2 — FRAUD DETECTION ENGINE
+// 🧠 FRAUD DETECTION ENGINE
 //////////////////////////////////////////////////////
 
 function detectFraud({ description, amount, type }) {
 
   const desc = (description || "").toLowerCase();
 
-  let riskScore = 0;
+  let score = 0;
   let flags = [];
 
   if (amount > 1000000) {
-    riskScore += 2;
+    score += 2;
     flags.push("High value transaction");
   }
 
   if (desc.includes("refund") && desc.includes("cash")) {
-    riskScore += 2;
-    flags.push("Refund/Cash anomaly");
-  }
-
-  if (desc.includes("salary") && amount % 100 !== 0) {
-    riskScore += 1;
-    flags.push("Irregular salary pattern");
+    score += 2;
+    flags.push("Refund anomaly");
   }
 
   if (type === "transfer" && amount > 500000) {
-    riskScore += 2;
-    flags.push("Large transfer detected");
+    score += 2;
+    flags.push("Large transfer");
   }
 
   let level = "LOW";
-  if (riskScore >= 4) level = "HIGH";
-  else if (riskScore >= 2) level = "MEDIUM";
+  if (score >= 4) level = "HIGH";
+  else if (score >= 2) level = "MEDIUM";
 
-  return { riskScore, level, flags };
+  return { score, level, flags };
 }
 
 //////////////////////////////////////////////////////
-// 🧠 MAIN ENTRY POINT (ERP CORE ENGINE)
+// 🧠 MAIN ENTRY POINT
 //////////////////////////////////////////////////////
 
 async function submitTransaction() {
@@ -119,12 +106,16 @@ async function submitTransaction() {
   const date = document.getElementById("date").value;
   const type = document.getElementById("type").value;
   const amount = Number(document.getElementById("amount").value);
-  const accountIdManual = document.getElementById("account").value;
+  const manualAccount = document.getElementById("account").value;
 
   if (!description || !date || !amount) {
     showMsg("Fill all required fields");
     return;
   }
+
+  //////////////////////////////////////////////////////
+  // SESSION + COMPANY
+  //////////////////////////////////////////////////////
 
   const { data: sessionData } = await sb.auth.getSession();
   const user = sessionData.session.user;
@@ -136,29 +127,14 @@ async function submitTransaction() {
     .single();
 
   //////////////////////////////////////////////////////
-  // CLASSIFICATION ENGINE
+  // AI LAYERS
   //////////////////////////////////////////////////////
 
   const classification = classifyTransaction(description, type);
-
-  //////////////////////////////////////////////////////
-  // AI SUGGESTION ENGINE
-  //////////////////////////////////////////////////////
-
-  const suggestion = suggestAccount(description, type);
+  const suggestion = suggestAccount(description);
+  const fraud = detectFraud({ description, amount, type });
 
   console.log("AI Suggestion:", suggestion);
-
-  //////////////////////////////////////////////////////
-  // FRAUD DETECTION ENGINE
-  //////////////////////////////////////////////////////
-
-  const fraud = detectFraud({
-    description,
-    amount,
-    type
-  });
-
   console.log("Fraud:", fraud);
 
   if (fraud.level === "HIGH") {
@@ -166,16 +142,18 @@ async function submitTransaction() {
   }
 
   //////////////////////////////////////////////////////
-  // ACCOUNT RESOLUTION
+  // RESOLVE ACCOUNT
   //////////////////////////////////////////////////////
 
   const accountId =
-    accountIdManual ||
-    await getAccountByCode(company.id, suggestion.account_code);
+    manualAccount ||
+    await getAccountByCode(company.id, suggestion.code);
 
   //////////////////////////////////////////////////////
   // BUILD DOUBLE ENTRY
   //////////////////////////////////////////////////////
+
+  const cashAccount = await getCashAccount(company.id);
 
   let lines = [];
 
@@ -183,19 +161,17 @@ async function submitTransaction() {
 
     lines = [
       { account_id: accountId, debit: amount, credit: 0, description },
-      { account_id: await getCashAccount(company.id), debit: 0, credit: amount, description }
+      { account_id: cashAccount, debit: 0, credit: amount, description }
     ];
-  }
 
-  else if (type === "income") {
+  } else if (type === "income") {
 
     lines = [
-      { account_id: await getCashAccount(company.id), debit: amount, credit: 0, description },
+      { account_id: cashAccount, debit: amount, credit: 0, description },
       { account_id: accountId, debit: 0, credit: amount, description }
     ];
-  }
 
-  else if (type === "transfer") {
+  } else {
 
     lines = [
       { account_id: accountId, debit: amount, credit: 0, description }
@@ -203,7 +179,7 @@ async function submitTransaction() {
   }
 
   //////////////////////////////////////////////////////
-  // CREATE JOURNAL ENTRY
+  // POST JOURNAL ENTRY
   //////////////////////////////////////////////////////
 
   try {
@@ -211,7 +187,7 @@ async function submitTransaction() {
     const entry = await createJournalEntry({
       companyId: company.id,
       entryDate: date,
-      description: description + " [" + classification + "]",
+      description: `${description} [${classification}]`,
       reference,
       lines
     });
@@ -235,7 +211,7 @@ async function submitTransaction() {
 }
 
 //////////////////////////////////////////////////////
-// CASH ACCOUNT
+// 🧠 HELPERS
 //////////////////////////////////////////////////////
 
 async function getCashAccount(companyId) {
@@ -250,10 +226,6 @@ async function getCashAccount(companyId) {
   return data.id;
 }
 
-//////////////////////////////////////////////////////
-// GET ACCOUNT BY CODE
-//////////////////////////////////////////////////////
-
 async function getAccountByCode(companyId, code) {
 
   const { data } = await sb
@@ -267,7 +239,7 @@ async function getAccountByCode(companyId, code) {
 }
 
 //////////////////////////////////////////////////////
-// CORE DOUBLE ENTRY ENGINE
+// 🧠 DOUBLE ENTRY ENGINE (CORE SAFE VERSION)
 //////////////////////////////////////////////////////
 
 async function createJournalEntry({
@@ -278,16 +250,16 @@ async function createJournalEntry({
   lines
 }) {
 
-  let totalDebit = 0;
-  let totalCredit = 0;
+  let debit = 0;
+  let credit = 0;
 
   lines.forEach(l => {
-    totalDebit += Number(l.debit || 0);
-    totalCredit += Number(l.credit || 0);
+    debit += Number(l.debit || 0);
+    credit += Number(l.credit || 0);
   });
 
-  if (totalDebit !== totalCredit) {
-    throw new Error("Unbalanced Entry!");
+  if (debit !== credit) {
+    throw new Error(`Unbalanced Entry: ${debit} ≠ ${credit}`);
   }
 
   const { data: entry, error } = await sb
@@ -323,7 +295,7 @@ async function createJournalEntry({
 }
 
 //////////////////////////////////////////////////////
-// UI MESSAGE
+// 🧠 UI MESSAGE
 //////////////////////////////////////////////////////
 
 function showMsg(msg) {
