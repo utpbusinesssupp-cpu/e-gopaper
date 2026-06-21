@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>e-Gopaper Transactions</title>
+
+<link rel="stylesheet" href="journal.css">
+
+</head>
+<body>
+
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <h2>e-Gopaper</h2>
+
+        <ul>
+
+            <li onclick="location.href='dashboard.html'">
+                Dashboard
+            </li>
+
+            <li>
+                Transactions
+            </li>
+
+            <li onclick="location.href='ledger.html'">
+                General Ledger
+            </li>
+
+            <li onclick="location.href='reports.html'">
+                Reports
+            </li>
+
+            <li id="logoutBtn">
+                Logout
+            </li>
+
+        </ul>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <section class="card">
+
+            <h1>New Transaction</h1>
+
+            <p>
+                Record income and expenses.
+            </p>
+
+        </section>
+
+
+        <section class="card form-card">
+
+            <label>Transaction Type</label>
+
+            <select id="type">
+
+                <option value="expense">
+                    Expense
+                </option>
+
+                <option value="income">
+                    Income
+                </option>
+
+            </select>
+
+
+            <label>Date</label>
+
+            <input
+                type="date"
+                id="date"
+            >
+
+
+            <label>Description</label>
+
+            <input
+                type="text"
+                id="description"
+                placeholder="Description"
+            >
+
+
+            <label>Amount</label>
+
+            <input
+                type="number"
+                id="amount"
+                placeholder="0"
+            >
+
+
+            <label>Account</label>
+
+            <select id="account">
+
+                <option>
+                    Loading...
+                </option>
+
+            </select>
+
+
+            <label>Reference</label>
+
+            <input
+                type="text"
+                id="reference"
+                placeholder="Reference"
+            >
+
+
+            <button id="saveBtn">
+
+                Save Transaction
+
+            </button>
+
+
+            <div id="msg"></div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="journal-engine.js"></script>
+<script src="journal.js"></script>
+
+</body>
+</html>
