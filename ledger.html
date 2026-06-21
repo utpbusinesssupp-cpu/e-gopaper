@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>General Ledger | e-Gopaper ERP</title>
+
+<link rel="stylesheet" href="dashboard.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <h2>e-Gopaper</h2>
+
+        <ul>
+
+            <li onclick="window.location.href='dashboard.html'">Dashboard</li>
+            <li onclick="window.location.href='chart-of-accounts.html'">Chart of Accounts</li>
+            <li onclick="window.location.href='journal-entry.html'">Journal Entry</li>
+            <li class="active">General Ledger</li>
+            <li>Reports</li>
+            <li id="logoutBtn">Logout</li>
+
+        </ul>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <section class="card">
+
+            <h1>General Ledger</h1>
+
+            <p>All posted transactions</p>
+
+        </section>
+
+
+        <section class="card">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Account</th>
+                        <th>Debit</th>
+                        <th>Credit</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="ledgerTable">
+
+                    <tr>
+                        <td colspan="5">Loading...</td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="ledger.js"></script>
+
+</body>
+</html>
