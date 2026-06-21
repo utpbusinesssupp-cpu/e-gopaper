@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>e-Gopaper ERP Dashboard</title>
+
+<link rel="stylesheet" href="dashboard.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <h2>e-Gopaper</h2>
+
+        <ul>
+
+            <li>Dashboard</li>
+
+            <li>Chart of Accounts</li>
+
+            <li>Transactions</li>
+
+            <li>General Ledger</li>
+
+            <li>Reports</li>
+
+            <li>Settings</li>
+
+            <li id="logoutBtn">Logout</li>
+
+        </ul>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+
+        <!-- WELCOME CARD -->
+        <section class="card">
+
+            <h1>Welcome to e-Gopaper ERP</h1>
+
+            <p>
+                Manage accounting, payroll, taxes and reports.
+            </p>
+
+        </section>
+
+
+        <!-- COMPANY CARD -->
+        <section class="card">
+
+            <h2>Company Information</h2>
+
+            <p><b>Name:</b> <span id="company_name">Loading...</span></p>
+
+            <p><b>TIN:</b> <span id="tin">Loading...</span></p>
+
+            <p><b>Phone:</b> <span id="phone">Loading...</span></p>
+
+            <p><b>Email:</b> <span id="email">Loading...</span></p>
+
+            <p><b>Currency:</b> <span id="currency">Loading...</span></p>
+
+        </section>
+
+
+        <!-- SUMMARY -->
+        <section class="summary">
+
+            <div class="card">
+                <h3>Cash Balance</h3>
+                <p>0 RWF</p>
+            </div>
+
+            <div class="card">
+                <h3>Revenue</h3>
+                <p>0 RWF</p>
+            </div>
+
+            <div class="card">
+                <h3>Expenses</h3>
+                <p>0 RWF</p>
+            </div>
+
+            <div class="card">
+                <h3>Net Profit</h3>
+                <p>0 RWF</p>
+            </div>
+
+        </section>
+
+
+        <!-- RECENT ACTIVITY -->
+        <section class="card">
+
+            <h2>Recent Activities</h2>
+
+            <p>No transactions yet.</p>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="dashboard.js"></script>
+
+</body>
+</html>
