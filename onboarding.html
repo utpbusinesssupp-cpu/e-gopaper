@@ -1,1 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>e-Gopaper Onboarding</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:linear-gradient(135deg,#e0e7ff,#f4f6fb);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+}
+
+.card{
+  width:450px;
+  background:white;
+  padding:30px;
+  border-radius:16px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.12);
+}
+
+h2{
+  text-align:center;
+  color:#1f2937;
+}
+
+input, select{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border:1px solid #ddd;
+  border-radius:10px;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  background:#2563eb;
+  color:white;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+button:hover{
+  background:#1d4ed8;
+}
+
+.msg{
+  text-align:center;
+  font-size:13px;
+  margin-top:10px;
+  color:#555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>Company Setup</h2>
+
+<input id="company_name" placeholder="Company Name">
+<input id="industry_type" placeholder="Industry Type">
+<input id="tin" placeholder="TIN (Tax ID)">
+<input id="phone" placeholder="Phone">
+<p style="margin:10px 0; font-size:14px; color:#555;">
+  Logged in as: <b id="userEmail"></b>
+</p>
+<input id="address" placeholder="Address">
+
+<select id="currency_code">
+  <option value="RWF">RWF</option>
+  <option value="USD">USD</option>
+  <option value="EUR">EUR</option>
+</select>
+
+<button onclick="saveCompany()">Continue</button>
+
+<div class="msg" id="msg"></div>
+
+</div>
+
+<script>
+
+//////////////////////////////////////////////////////
+// SUPABASE INIT
+//////////////////////////////////////////////////////
+
+const sb = window.supabase.createClient(
+  "https://duznidzlfvadjcoxynjh.supabase.co",
+  "sb_publishable_3UzY44NnUmIi795wKqr2Kg_G0LBpJp4"
+);
+
+let user = null;
+
+//////////////////////////////////////////////////////
+// GET USER ON PAGE LOAD
+//////////////////////////////////////////////////////
+
+(async () => {
+
+  const { data } = await sb.auth.getUser();
+
+  user = data.user;
+
+  if (user) {
+    document.getElementById("userEmail").innerText = user.email;
+  }
+
+})();
+  
+//////////////////////////////////////////////////////
+// GET SESSION (SECURITY CHECK)
+//////////////////////////////////////////////////////
+
+async function init(){
+
+  const { data } = await sb.auth.getSession();
+
+  if(!data.session){
+    window.location.href = "index.html";
+    return;
+  }
+
+  user = data.session.user;
+
+  document.getElementById("email").value = user.email;
+
+}
+
+//////////////////////////////////////////////////////
+// SAVE COMPANY
+//////////////////////////////////////////////////////
+
+async function saveCompany(){
+
+  const company_name = document.getElementById("company_name").value;
+  const industry_type = document.getElementById("industry_type").value;
+  const tin = document.getElementById("tin").value;
+  const phone = document.getElementById("phone").value;
+  const email = document.getElementById("email").value;
+  const address = document.getElementById("address").value;
+  const currency_code = document.getElementById("currency_code").value;
+
+  if(!company_name){
+    showMsg("Company name required");
+    return;
+  }
+
+  const { error } = await sb.from("companies").insert([{
+    user_id: user.id,
+    email: user.email,
+    company_name,
+    industry_type,
+    tin,
+    phone,
+    email,
+    address,
+    currency_code
+  }]);
+
+  if(error){
+    showMsg(error.message);
+    return;
+  }
+
+  showMsg("Company saved ✔ Redirecting...");
+
+  setTimeout(()=>{
+    window.location.href = "dashboard.html";
+  }, 1500);
+
+}
+
+//////////////////////////////////////////////////////
+// MESSAGE
+//////////////////////////////////////////////////////
+
+function showMsg(msg){
+  document.getElementById("msg").innerText = msg;
+}
+
+init();
+
+</script>
+
+</body>
+</html>
+
 
