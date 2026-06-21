@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Classification Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6fb;
+      padding: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    canvas {
+      margin-top: 30px;
+      background: white;
+      padding: 10px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>📊 e-Gopaper Classification Dashboard</h2>
+
+<div class="grid">
+
+  <div class="card">
+    <h3>EBM</h3>
+    <p id="ebm">0</p>
+  </div>
+
+  <div class="card">
+    <h3>NON-EBM</h3>
+    <p id="nonEbm">0</p>
+  </div>
+
+  <div class="card">
+    <h3>PAYE</h3>
+    <p id="paye">0</p>
+  </div>
+
+  <div class="card">
+    <h3>WITHHOLDING</h3>
+    <p id="withholding">0</p>
+  </div>
+
+</div>
+
+<canvas id="chart" height="100"></canvas>
+
+<script>
+//////////////////////////////////////////////////////
+// SUPABASE INIT
+//////////////////////////////////////////////////////
+
+const sb = window.supabase.createClient(
+  "https://duznidzlfvadjcoxynjh.supabase.co",
+  "sb_publishable_3UzY44NnUmIi795wKqr2Kg_G0LBpJp4"
+);
+
+//////////////////////////////////////////////////////
+// INIT
+//////////////////////////////////////////////////////
+
+init();
+
+async function init() {
+
+  const { data: sessionData } = await sb.auth.getSession();
+
+  if (!sessionData.session) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  const user = sessionData.session.user;
+
+  const { data: company } = await sb
+    .from("companies")
+    .select("*")
+    .eq("user_id", user.id)
+    .single();
+
+  const { data: rows } = await sb
+    .from("transaction_classification")
+    .select("*")
+    .eq("company_id", company.id);
+
+  let ebm = 0;
+  let nonEbm = 0;
+  let paye = 0;
+  let withholding = 0;
+
+  rows.forEach(r => {
+    if (r.classification_type === "EBM") ebm++;
+    else if (r.classification_type === "NON_EBM") nonEbm++;
+    else if (r.classification_type === "PAYE") paye++;
+    else if (r.classification_type === "WITHHOLDING_TAX") withholding++;
+  });
+
+  // UPDATE CARDS
+  document.getElementById("ebm").innerText = ebm;
+  document.getElementById("nonEbm").innerText = nonEbm;
+  document.getElementById("paye").innerText = paye;
+  document.getElementById("withholding").innerText = withholding;
+
+  //////////////////////////////////////////////////////
+  // CHART
+  //////////////////////////////////////////////////////
+
+  new Chart(document.getElementById("chart"), {
+    type: "pie",
+    data: {
+      labels: ["EBM", "NON-EBM", "PAYE", "WITHHOLDING"],
+      datasets: [{
+        data: [ebm, nonEbm, paye, withholding]
+      }]
+    }
+  });
+
+}
+</script>
+
+</body>
+</html>
