@@ -1,134 +1,85 @@
-//////////////////////////////////////////////////////
-// SUPABASE INIT
-//////////////////////////////////////////////////////
-
-const sb = window.supabase.createClient(
-  "https://duznidzlfvadjcoxynjh.supabase.co",
-  "sb_publishable_3UzY44NnUmIi795wKqr2Kg_G0LBpJp4"
-);
-
-
-//////////////////////////////////////////////////////
-// INIT
-//////////////////////////////////////////////////////
-
-init();
-
-async function init() {
-
-  const { data: sessionData } = await sb.auth.getSession();
-
-  if (!sessionData.session) {
-    window.location.href = "index.html";
-    return;
-  }
-
-  const user = sessionData.session.user;
-
-
-  //////////////////////////////////////////////////////
-  // GET COMPANY
-  //////////////////////////////////////////////////////
-
-  const { data: company, error: companyError } = await sb
-    .from("companies")
-    .select("*")
-    .eq("user_id", user.id)
-    .single();
-
-  if (companyError) {
-    alert(companyError.message);
-    return;
-  }
-
-
-  //////////////////////////////////////////////////////
-  // LOAD LEDGER DATA (JOIN LOGIC)
-  //////////////////////////////////////////////////////
-
-  const { data, error } = await sb
-    .from("journal_lines")
-    .select(`
-      id,
-      debit,
-      credit,
-      description,
-      created_at,
-      journal_entries (
-        entry_date,
-        description
-      ),
-      chart_of_accounts (
-        account_name,
-        account_code
-      )
-    `)
-    .eq("company_id", company.id)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  renderLedger(data || []);
-}
-
-
-//////////////////////////////////////////////////////
-// RENDER LEDGER TABLE
-//////////////////////////////////////////////////////
-
 function renderLedger(lines) {
 
   const tbody = document.getElementById("ledgerTable");
-
   tbody.innerHTML = "";
 
   if (!lines.length) {
-
     tbody.innerHTML = `
       <tr>
         <td colspan="5">No transactions yet</td>
       </tr>
     `;
-
     return;
   }
 
+
+  //////////////////////////////////////////////////////
+  // GROUP BY JOURNAL ENTRY
+  //////////////////////////////////////////////////////
+
+  const grouped = {};
+
   lines.forEach(line => {
 
-    const date = line.journal_entries?.entry_date || "-";
-    const desc = line.journal_entries?.description || "-";
+    const entryId = line.journal_entries?.id || line.created_at;
 
-    const account = line.chart_of_accounts?.account_name || "-";
+    if (!grouped[entryId]) {
+      grouped[entryId] = {
+        date: line.journal_entries?.entry_date,
+        description: line.journal_entries?.description,
+        lines: []
+      };
+    }
+
+    grouped[entryId].lines.push(line);
+  });
+
+
+  //////////////////////////////////////////////////////
+  // RENDER GROUPED ENTRIES
+  //////////////////////////////////////////////////////
+
+  Object.values(grouped).forEach(entry => {
+
+    let totalDebit = 0;
+    let totalCredit = 0;
+
+    let htmlLines = "";
+
+    entry.lines.forEach(l => {
+
+      totalDebit += Number(l.debit || 0);
+      totalCredit += Number(l.credit || 0);
+
+      htmlLines += `
+        <tr style="background:#f9fafb">
+          <td></td>
+          <td>↳ ${l.chart_of_accounts?.account_name || "-"}</td>
+          <td>${l.debit || 0}</td>
+          <td>${l.credit || 0}</td>
+        </tr>
+      `;
+    });
+
+
+    //////////////////////////////////////////////////////
+    // ENTRY HEADER ROW
+    //////////////////////////////////////////////////////
 
     tbody.innerHTML += `
-      <tr>
+      <tr style="background:#e5e7eb;font-weight:bold">
+        <td>${entry.date}</td>
+        <td colspan="1">${entry.description}</td>
+        <td colspan="2">Entry Total: ${totalDebit}</td>
+      </tr>
 
-        <td>${date}</td>
+      ${htmlLines}
 
-        <td>${desc}</td>
-
-        <td>${account}</td>
-
-        <td>${line.debit || 0}</td>
-
-        <td>${line.credit || 0}</td>
-
+      <tr style="border-bottom:2px solid #ddd">
+        <td colspan="2"></td>
+        <td><b>${totalDebit}</b></td>
+        <td><b>${totalCredit}</b></td>
       </tr>
     `;
   });
 }
-
-
-//////////////////////////////////////////////////////
-// LOGOUT
-//////////////////////////////////////////////////////
-
-document.getElementById("logoutBtn").addEventListener("click", async () => {
-
-  await sb.auth.signOut();
-  window.location.href = "index.html";
-
-});
