@@ -44,10 +44,12 @@
     <!-- MAIN CONTENT -->
     <main class="main">
 
-        <!-- WELCOME CARD -->
+        <!-- WELCOME -->
         <section class="card">
 
-            <h1>Welcome to e-Gopaper ERP</h1>
+            <h1 id="welcomeTitle">
+                Welcome
+            </h1>
 
             <p>
                 Manage accounting, payroll, taxes and reports.
@@ -56,7 +58,7 @@
         </section>
 
 
-        <!-- COMPANY CARD -->
+        <!-- COMPANY INFORMATION -->
         <section class="card">
 
             <h2>Company Information</h2>
@@ -78,40 +80,84 @@
         <section class="summary">
 
             <div class="card">
+
                 <h3>Cash Balance</h3>
-                <p>0 RWF</p>
+
+                <p id="cashBalance">
+                    0 RWF
+                </p>
+
             </div>
 
+
             <div class="card">
+
                 <h3>Revenue</h3>
-                <p>0 RWF</p>
+
+                <p id="revenue">
+                    0 RWF
+                </p>
+
             </div>
 
+
             <div class="card">
+
                 <h3>Expenses</h3>
-                <p>0 RWF</p>
+
+                <p id="expenses">
+                    0 RWF
+                </p>
+
             </div>
 
+
             <div class="card">
+
                 <h3>Net Profit</h3>
-                <p>0 RWF</p>
+
+                <p id="netProfit">
+                    0 RWF
+                </p>
+
             </div>
 
         </section>
 
 
-        <!-- RECENT ACTIVITY -->
+        <!-- RECENT ACTIVITIES -->
         <section class="card">
 
             <h2>Recent Activities</h2>
 
-            <p>No transactions yet.</p>
+            <div id="recentActivities">
+
+                No transactions yet.
+
+            </div>
+
+        </section>
+
+
+        <!-- QUICK ACTIONS -->
+        <section class="card">
+
+            <h2>Quick Actions</h2>
+
+            <button>Add Transaction</button>
+
+            <button>Create Invoice</button>
+
+            <button>Run Payroll</button>
+
+            <button>View Reports</button>
 
         </section>
 
     </main>
 
 </div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
