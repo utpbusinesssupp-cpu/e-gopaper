@@ -40,12 +40,18 @@ async function init() {
     .eq("user_id", user.id)
     .single();
 
-  // NOTE: if you store company_id differently adjust later
-
-
   if (companyError) {
     console.log(companyError.message);
+    alert("Company not found or access denied");
+    return;
   }
+
+
+  //////////////////////////////////////////////////////
+  // SEED DEFAULT CHART OF ACCOUNTS (IMPORTANT)
+  //////////////////////////////////////////////////////
+
+  await seedDefaultAccounts(company.id);
 
 
   //////////////////////////////////////////////////////
@@ -55,16 +61,81 @@ async function init() {
   const { data: accounts, error } = await sb
     .from("chart_of_accounts")
     .select("*")
+    .eq("company_id", company.id)
     .order("account_code", { ascending: true });
-
 
   if (error) {
     alert(error.message);
     return;
   }
 
-
   renderAccounts(accounts || []);
+}
+
+
+//////////////////////////////////////////////////////
+// SEED DEFAULT ACCOUNTS
+//////////////////////////////////////////////////////
+
+async function seedDefaultAccounts(companyId) {
+
+  const defaultAccounts = [
+
+    // ASSETS
+    { account_code: "1000", account_name: "Cash", account_type: "Asset" },
+    { account_code: "1100", account_name: "Bank", account_type: "Asset" },
+    { account_code: "1200", account_name: "Accounts Receivable", account_type: "Asset" },
+
+    // LIABILITIES
+    { account_code: "2000", account_name: "Accounts Payable", account_type: "Liability" },
+    { account_code: "2100", account_name: "VAT Payable", account_type: "Liability" },
+    { account_code: "2200", account_name: "PAYE Payable", account_type: "Liability" },
+    { account_code: "2300", account_name: "RSSB Payable", account_type: "Liability" },
+    { account_code: "2400", account_name: "Withholding Tax", account_type: "Liability" },
+
+    // EQUITY
+    { account_code: "3000", account_name: "Capital", account_type: "Equity" },
+    { account_code: "3100", account_name: "Retained Earnings", account_type: "Equity" },
+
+    // REVENUE
+    { account_code: "4000", account_name: "Revenue", account_type: "Revenue" },
+
+    // EXPENSES
+    { account_code: "5000", account_name: "Salaries Expense", account_type: "Expense" },
+    { account_code: "5100", account_name: "Office Expense", account_type: "Expense" },
+    { account_code: "5200", account_name: "Fuel Expense", account_type: "Expense" },
+    { account_code: "5300", account_name: "EBM Supported Expense", account_type: "Expense" },
+    { account_code: "5400", account_name: "Non-EBM Expense", account_type: "Expense" }
+
+  ];
+
+  // CHECK IF ALREADY EXISTS
+  const { data: existing } = await sb
+    .from("chart_of_accounts")
+    .select("id")
+    .eq("company_id", companyId)
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    console.log("Accounts already seeded");
+    return;
+  }
+
+  const toInsert = defaultAccounts.map(acc => ({
+    ...acc,
+    company_id: companyId,
+    is_active: true
+  }));
+
+  const { error } = await sb
+    .from("chart_of_accounts")
+    .insert(toInsert);
+
+  if (error) {
+    console.log("Seed error:", error.message);
+  } else {
+    console.log("Chart of Accounts seeded successfully ✔");
+  }
 }
 
 
