@@ -154,18 +154,6 @@ async function handleAuth(){
       return;
     }
 
-    if(mode === "login"){
-
-  const { data, error } = await sb.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if(error){
-    showMsg(error.message);
-    return;
-  }
-
   const user = data.user;
 
   const { data: companyData } = await sb
