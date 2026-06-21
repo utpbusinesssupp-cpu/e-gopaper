@@ -7,33 +7,24 @@ const sb = window.supabase.createClient(
   "sb_publishable_3UzY44NnUmIi795wKqr2Kg_G0LBpJp4"
 );
 
-
 //////////////////////////////////////////////////////
-// CLASSIFICATION ENGINE (PHASE 4 STEP 2)
+// PHASE 4 STEP 2 — CLASSIFICATION ENGINE
 //////////////////////////////////////////////////////
 
 function classifyTransaction(description, type) {
 
   let classification = "NON_EBM";
-
   const desc = (description || "").toLowerCase();
 
-  // PAYE
   if (desc.includes("salary")) {
     classification = "PAYE";
-  }
-
-  // WITHHOLDING TAX
+  } 
   else if (desc.includes("service")) {
     classification = "WITHHOLDING_TAX";
-  }
-
-  // EBM
+  } 
   else if (desc.includes("ebm")) {
     classification = "EBM";
-  }
-
-  // EXPENSE DEFAULT
+  } 
   else if (type === "expense") {
     classification = "NON_EBM";
   }
@@ -41,6 +32,30 @@ function classifyTransaction(description, type) {
   return classification;
 }
 
+//////////////////////////////////////////////////////
+// PHASE 4 STEP 3 — SAVE CLASSIFICATION
+//////////////////////////////////////////////////////
+
+async function saveClassification({
+  companyId,
+  journalEntryId,
+  classification,
+  description
+}) {
+
+  const { error } = await sb
+    .from("transaction_classification")
+    .insert([{
+      company_id: companyId,
+      journal_entry_id: journalEntryId,
+      classification_type: classification,
+      description
+    }]);
+
+  if (error) {
+    console.log("Classification save error:", error.message);
+  }
+}
 
 //////////////////////////////////////////////////////
 // MAIN ENTRY POINT
@@ -60,10 +75,8 @@ async function submitTransaction() {
     return;
   }
 
-
   const { data: sessionData } = await sb.auth.getSession();
   const user = sessionData.session.user;
-
 
   const { data: company } = await sb
     .from("companies")
@@ -71,18 +84,16 @@ async function submitTransaction() {
     .eq("user_id", user.id)
     .single();
 
-
   //////////////////////////////////////////////////////
-  // STEP 2 → CLASSIFY TRANSACTION (NEW)
+  // STEP 2 — CLASSIFY TRANSACTION
   //////////////////////////////////////////////////////
 
   const classification = classifyTransaction(description, type);
 
   console.log("Classification:", classification);
 
-
   //////////////////////////////////////////////////////
-  // BUILD DOUBLE ENTRY
+  // BUILD DOUBLE ENTRY (PHASE 3 CORE)
   //////////////////////////////////////////////////////
 
   let lines = [];
@@ -135,19 +146,29 @@ async function submitTransaction() {
     ];
   }
 
-
   //////////////////////////////////////////////////////
-  // SAVE JOURNAL ENTRY
+  // CREATE JOURNAL ENTRY
   //////////////////////////////////////////////////////
 
   try {
 
-    await createJournalEntry({
+    const entry = await createJournalEntry({
       companyId: company.id,
       entryDate: date,
       description: description + " [" + classification + "]",
       reference,
       lines
+    });
+
+    //////////////////////////////////////////////////////
+    // STEP 3 — SAVE CLASSIFICATION
+    //////////////////////////////////////////////////////
+
+    await saveClassification({
+      companyId: company.id,
+      journalEntryId: entry.id,
+      classification,
+      description
     });
 
     showMsg("Transaction posted ✔");
@@ -156,7 +177,6 @@ async function submitTransaction() {
     showMsg(err.message);
   }
 }
-
 
 //////////////////////////////////////////////////////
 // CASH ACCOUNT
@@ -174,9 +194,8 @@ async function getCashAccount(companyId) {
   return data.id;
 }
 
-
 //////////////////////////////////////////////////////
-// JOURNAL ENGINE CORE
+// CORE JOURNAL ENGINE (DOUBLE ENTRY)
 //////////////////////////////////////////////////////
 
 async function createJournalEntry({
@@ -199,7 +218,6 @@ async function createJournalEntry({
     throw new Error("Unbalanced Entry!");
   }
 
-
   const { data: entry, error } = await sb
     .from("journal_entries")
     .insert([{
@@ -213,7 +231,6 @@ async function createJournalEntry({
     .single();
 
   if (error) throw new Error(error.message);
-
 
   const formatted = lines.map(l => ({
     journal_entry_id: entry.id,
@@ -233,9 +250,8 @@ async function createJournalEntry({
   return entry;
 }
 
-
 //////////////////////////////////////////////////////
-// MESSAGE
+// UI MESSAGE
 //////////////////////////////////////////////////////
 
 function showMsg(msg) {
