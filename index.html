@@ -154,7 +154,30 @@ async function handleAuth(){
       return;
     }
 
-    showDashboard(data.user);
+    showMsg("Login success ✔");
+
+setTimeout(async () => {
+
+  const user = data.user;
+
+  const { data: companyData, error } = await sb
+    .from("companies")
+    .select("*")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    showMsg(error.message);
+    return;
+  }
+
+  if (!companyData) {
+    window.location.href = "onboarding.html";
+  } else {
+    window.location.href = "dashboard.html";
+  }
+
+}, 300);
 
   } else {
 
