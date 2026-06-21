@@ -8,7 +8,7 @@ const sb = window.supabase.createClient(
 );
 
 //////////////////////////////////////////////////////
-// PHASE 4 STEP 2 — CLASSIFICATION ENGINE
+// 🧠 PHASE 4 STEP 2 — CLASSIFICATION ENGINE
 //////////////////////////////////////////////////////
 
 function classifyTransaction(description, type) {
@@ -33,7 +33,7 @@ function classifyTransaction(description, type) {
 }
 
 //////////////////////////////////////////////////////
-// PHASE 4 STEP 3 — SAVE CLASSIFICATION
+// 🧠 PHASE 4 STEP 3 — SAVE CLASSIFICATION
 //////////////////////////////////////////////////////
 
 async function saveClassification({
@@ -52,36 +52,64 @@ async function saveClassification({
       description
     }]);
 
-  if (error) {
-    console.log("Classification save error:", error.message);
-  }
+  if (error) console.log("Classification error:", error.message);
 }
 
 //////////////////////////////////////////////////////
-// 🧠 PHASE 5 — AI SUGGESTION ENGINE (READY HOOK)
+// 🧠 PHASE 5 STEP 1 — AI ACCOUNT SUGGESTION ENGINE
 //////////////////////////////////////////////////////
 
 function suggestAccount(description, type) {
 
   const desc = (description || "").toLowerCase();
 
-  if (desc.includes("salary")) {
-    return { account_code: "5001", reason: "Payroll detected" };
-  }
-
-  if (desc.includes("rent")) {
-    return { account_code: "6001", reason: "Rent expense detected" };
-  }
-
-  if (desc.includes("fuel")) {
-    return { account_code: "6002", reason: "Transport expense detected" };
-  }
+  if (desc.includes("salary")) return { account_code: "5001", reason: "Payroll detected" };
+  if (desc.includes("rent")) return { account_code: "6001", reason: "Rent detected" };
+  if (desc.includes("fuel")) return { account_code: "6002", reason: "Transport detected" };
 
   return { account_code: "1000", reason: "Default cash mapping" };
 }
 
 //////////////////////////////////////////////////////
-// MAIN ENTRY POINT
+// 🧠 PHASE 5 STEP 2 — FRAUD DETECTION ENGINE
+//////////////////////////////////////////////////////
+
+function detectFraud({ description, amount, type }) {
+
+  const desc = (description || "").toLowerCase();
+
+  let riskScore = 0;
+  let flags = [];
+
+  if (amount > 1000000) {
+    riskScore += 2;
+    flags.push("High value transaction");
+  }
+
+  if (desc.includes("refund") && desc.includes("cash")) {
+    riskScore += 2;
+    flags.push("Refund/Cash anomaly");
+  }
+
+  if (desc.includes("salary") && amount % 100 !== 0) {
+    riskScore += 1;
+    flags.push("Irregular salary pattern");
+  }
+
+  if (type === "transfer" && amount > 500000) {
+    riskScore += 2;
+    flags.push("Large transfer detected");
+  }
+
+  let level = "LOW";
+  if (riskScore >= 4) level = "HIGH";
+  else if (riskScore >= 2) level = "MEDIUM";
+
+  return { riskScore, level, flags };
+}
+
+//////////////////////////////////////////////////////
+// 🧠 MAIN ENTRY POINT (ERP CORE ENGINE)
 //////////////////////////////////////////////////////
 
 async function submitTransaction() {
@@ -108,19 +136,42 @@ async function submitTransaction() {
     .single();
 
   //////////////////////////////////////////////////////
-  // STEP 2 — CLASSIFICATION
+  // CLASSIFICATION ENGINE
   //////////////////////////////////////////////////////
 
   const classification = classifyTransaction(description, type);
 
-  console.log("Classification:", classification);
-
   //////////////////////////////////////////////////////
-  // 🧠 PHASE 5 AI SUGGESTION (OPTIONAL HOOK)
+  // AI SUGGESTION ENGINE
   //////////////////////////////////////////////////////
 
   const suggestion = suggestAccount(description, type);
+
   console.log("AI Suggestion:", suggestion);
+
+  //////////////////////////////////////////////////////
+  // FRAUD DETECTION ENGINE
+  //////////////////////////////////////////////////////
+
+  const fraud = detectFraud({
+    description,
+    amount,
+    type
+  });
+
+  console.log("Fraud:", fraud);
+
+  if (fraud.level === "HIGH") {
+    showMsg("🚨 High Risk Transaction Detected!");
+  }
+
+  //////////////////////////////////////////////////////
+  // ACCOUNT RESOLUTION
+  //////////////////////////////////////////////////////
+
+  const accountId =
+    accountIdManual ||
+    await getAccountByCode(company.id, suggestion.account_code);
 
   //////////////////////////////////////////////////////
   // BUILD DOUBLE ENTRY
@@ -128,53 +179,26 @@ async function submitTransaction() {
 
   let lines = [];
 
-  const accountId = accountIdManual || await getAccountByCode(company.id, suggestion.account_code);
-
   if (type === "expense") {
 
     lines = [
-      {
-        account_id: accountId,
-        debit: amount,
-        credit: 0,
-        description
-      },
-      {
-        account_id: await getCashAccount(company.id),
-        debit: 0,
-        credit: amount,
-        description
-      }
+      { account_id: accountId, debit: amount, credit: 0, description },
+      { account_id: await getCashAccount(company.id), debit: 0, credit: amount, description }
     ];
   }
 
   else if (type === "income") {
 
     lines = [
-      {
-        account_id: await getCashAccount(company.id),
-        debit: amount,
-        credit: 0,
-        description
-      },
-      {
-        account_id: accountId,
-        debit: 0,
-        credit: amount,
-        description
-      }
+      { account_id: await getCashAccount(company.id), debit: amount, credit: 0, description },
+      { account_id: accountId, debit: 0, credit: amount, description }
     ];
   }
 
   else if (type === "transfer") {
 
     lines = [
-      {
-        account_id: accountId,
-        debit: amount,
-        credit: 0,
-        description
-      }
+      { account_id: accountId, debit: amount, credit: 0, description }
     ];
   }
 
@@ -193,7 +217,7 @@ async function submitTransaction() {
     });
 
     //////////////////////////////////////////////////////
-    // STEP 3 — SAVE CLASSIFICATION
+    // SAVE CLASSIFICATION
     //////////////////////////////////////////////////////
 
     await saveClassification({
@@ -227,7 +251,7 @@ async function getCashAccount(companyId) {
 }
 
 //////////////////////////////////////////////////////
-// AI HELPER — GET ACCOUNT BY CODE
+// GET ACCOUNT BY CODE
 //////////////////////////////////////////////////////
 
 async function getAccountByCode(companyId, code) {
@@ -243,7 +267,7 @@ async function getAccountByCode(companyId, code) {
 }
 
 //////////////////////////////////////////////////////
-// CORE JOURNAL ENGINE
+// CORE DOUBLE ENTRY ENGINE
 //////////////////////////////////////////////////////
 
 async function createJournalEntry({
