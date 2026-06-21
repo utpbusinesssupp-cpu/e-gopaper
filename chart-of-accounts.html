@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Chart of Accounts | e-Gopaper ERP</title>
+
+<link rel="stylesheet" href="chart-of-accounts.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <h2>e-Gopaper</h2>
+
+        <ul>
+
+            <li onclick="window.location.href='dashboard.html'">
+                Dashboard
+            </li>
+
+            <li class="active">
+                Chart of Accounts
+            </li>
+
+            <li>
+                Transactions
+            </li>
+
+            <li>
+                General Ledger
+            </li>
+
+            <li>
+                Reports
+            </li>
+
+            <li>
+                Settings
+            </li>
+
+            <li id="logoutBtn">
+                Logout
+            </li>
+
+        </ul>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- PAGE HEADER -->
+        <section class="card">
+
+            <h1>Chart of Accounts</h1>
+
+            <p>
+                Manage your accounting structure and ledger accounts.
+            </p>
+
+        </section>
+
+
+        <!-- ACTIONS -->
+        <section class="card">
+
+            <button id="addAccountBtn">
+                + Add Account
+            </button>
+
+        </section>
+
+
+        <!-- ACCOUNTS TABLE -->
+        <section class="card">
+
+            <h2>Accounts</h2>
+
+            <table>
+
+                <thead>
+
+                <tr>
+
+                    <th>Code</th>
+
+                    <th>Account Name</th>
+
+                    <th>Type</th>
+
+                    <th>Status</th>
+
+                </tr>
+
+                </thead>
+
+                <tbody id="accountsTable">
+
+                <tr>
+
+                    <td colspan="4">
+
+                        No accounts found.
+
+                    </td>
+
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+
+    </main>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="chart-of-accounts.js"></script>
+
+</body>
+</html>
