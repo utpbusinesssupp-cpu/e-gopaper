@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Journal Entry | e-Gopaper ERP</title>
+
+<link rel="stylesheet" href="dashboard.css">
+
+<style>
+
+.form-card{
+    background:white;
+    padding:25px;
+    border-radius:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+    margin-bottom:20px;
+}
+
+input, select{
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border:1px solid #ddd;
+    border-radius:10px;
+}
+
+.line-row{
+    display:grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap:10px;
+    margin-bottom:10px;
+}
+
+.btn{
+    padding:12px;
+    background:#2563eb;
+    color:white;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+.remove{
+    background:#dc2626;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <h2>e-Gopaper</h2>
+
+        <ul>
+
+            <li onclick="window.location.href='dashboard.html'">Dashboard</li>
+
+            <li onclick="window.location.href='chart-of-accounts.html'">Chart of Accounts</li>
+
+            <li class="active">Journal Entry</li>
+
+            <li>Reports</li>
+
+            <li id="logoutBtn">Logout</li>
+
+        </ul>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <div class="form-card">
+
+            <h2>Create Transaction</h2>
+
+            <input id="description" placeholder="Description">
+
+            <input id="reference" placeholder="Reference (optional)">
+
+            <input type="date" id="date">
+
+
+            <h3>Transaction Type</h3>
+
+            <select id="type">
+
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+                <option value="transfer">Transfer</option>
+
+            </select>
+
+
+            <h3>Amount</h3>
+
+            <input id="amount" type="number" placeholder="Amount">
+
+            <h3>Account</h3>
+
+            <select id="account"></select>
+
+
+            <button class="btn" onclick="submitTransaction()">
+                Post Transaction
+            </button>
+
+            <p id="msg"></p>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="journal-engine.js"></script>
+
+</body>
+</html>
