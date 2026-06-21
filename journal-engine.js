@@ -58,6 +58,29 @@ async function saveClassification({
 }
 
 //////////////////////////////////////////////////////
+// 🧠 PHASE 5 — AI SUGGESTION ENGINE (READY HOOK)
+//////////////////////////////////////////////////////
+
+function suggestAccount(description, type) {
+
+  const desc = (description || "").toLowerCase();
+
+  if (desc.includes("salary")) {
+    return { account_code: "5001", reason: "Payroll detected" };
+  }
+
+  if (desc.includes("rent")) {
+    return { account_code: "6001", reason: "Rent expense detected" };
+  }
+
+  if (desc.includes("fuel")) {
+    return { account_code: "6002", reason: "Transport expense detected" };
+  }
+
+  return { account_code: "1000", reason: "Default cash mapping" };
+}
+
+//////////////////////////////////////////////////////
 // MAIN ENTRY POINT
 //////////////////////////////////////////////////////
 
@@ -68,9 +91,9 @@ async function submitTransaction() {
   const date = document.getElementById("date").value;
   const type = document.getElementById("type").value;
   const amount = Number(document.getElementById("amount").value);
-  const accountId = document.getElementById("account").value;
+  const accountIdManual = document.getElementById("account").value;
 
-  if (!description || !date || !amount || !accountId) {
+  if (!description || !date || !amount) {
     showMsg("Fill all required fields");
     return;
   }
@@ -85,7 +108,7 @@ async function submitTransaction() {
     .single();
 
   //////////////////////////////////////////////////////
-  // STEP 2 — CLASSIFY TRANSACTION
+  // STEP 2 — CLASSIFICATION
   //////////////////////////////////////////////////////
 
   const classification = classifyTransaction(description, type);
@@ -93,10 +116,19 @@ async function submitTransaction() {
   console.log("Classification:", classification);
 
   //////////////////////////////////////////////////////
-  // BUILD DOUBLE ENTRY (PHASE 3 CORE)
+  // 🧠 PHASE 5 AI SUGGESTION (OPTIONAL HOOK)
+  //////////////////////////////////////////////////////
+
+  const suggestion = suggestAccount(description, type);
+  console.log("AI Suggestion:", suggestion);
+
+  //////////////////////////////////////////////////////
+  // BUILD DOUBLE ENTRY
   //////////////////////////////////////////////////////
 
   let lines = [];
+
+  const accountId = accountIdManual || await getAccountByCode(company.id, suggestion.account_code);
 
   if (type === "expense") {
 
@@ -195,7 +227,23 @@ async function getCashAccount(companyId) {
 }
 
 //////////////////////////////////////////////////////
-// CORE JOURNAL ENGINE (DOUBLE ENTRY)
+// AI HELPER — GET ACCOUNT BY CODE
+//////////////////////////////////////////////////////
+
+async function getAccountByCode(companyId, code) {
+
+  const { data } = await sb
+    .from("chart_of_accounts")
+    .select("id")
+    .eq("company_id", companyId)
+    .eq("account_code", code)
+    .single();
+
+  return data.id;
+}
+
+//////////////////////////////////////////////////////
+// CORE JOURNAL ENGINE
 //////////////////////////////////////////////////////
 
 async function createJournalEntry({
