@@ -154,21 +154,7 @@ async function handleAuth(){
       return;
     }
 
-  const user = data.user;
-
-  const { data: companyData } = await sb
-    .from("companies")
-    .select("*")
-    .eq("user_id", user.id)
-    .single();
-
-  if (!companyData) {
-    window.location.href = "onboarding.html";
-  } else {
-    window.location.href = "dashboard.html";
-  }
-
-}
+    showDashboard(data.user);
 
   } else {
 
@@ -241,4 +227,3 @@ async function logout(){
 
 </body>
 </html>
-
