@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////
-// SUPABASE INIT
+// SUPABASE
 //////////////////////////////////////////////////////
 
 const sb = window.supabase.createClient(
@@ -16,19 +16,19 @@ init();
 
 async function init() {
 
-  const { data: sessionData } = await sb.auth.getSession();
+  const { data: sessionData } =
+    await sb.auth.getSession();
 
   if (!sessionData.session) {
+
     window.location.href = "index.html";
+
     return;
+
   }
 
   const user = sessionData.session.user;
 
-
-  //////////////////////////////////////////////////////
-  // GET COMPANY
-  //////////////////////////////////////////////////////
 
   const { data: company } = await sb
     .from("companies")
@@ -37,108 +37,132 @@ async function init() {
     .single();
 
 
-  //////////////////////////////////////////////////////
-  // GET JOURNAL LINES WITH ACCOUNTS
-  //////////////////////////////////////////////////////
+  await loadBalanceSheet(company.id);
 
-  const { data: lines, error } = await sb
+}
+
+
+//////////////////////////////////////////////////////
+// LOAD BALANCE SHEET
+//////////////////////////////////////////////////////
+
+async function loadBalanceSheet(companyId) {
+
+  const { data, error } = await sb
     .from("journal_lines")
     .select(`
       debit,
       credit,
-      chart_of_accounts (
-        account_type,
-        account_name
+      chart_of_accounts(
+        account_type
       )
     `)
-    .eq("company_id", company.id);
+    .eq("company_id", companyId);
 
   if (error) {
-    alert(error.message);
+
+    console.log(error.message);
+
     return;
+
   }
 
 
-  //////////////////////////////////////////////////////
-  // CALCULATE BALANCE SHEET
-  //////////////////////////////////////////////////////
-
   let assets = 0;
+
   let liabilities = 0;
+
   let equity = 0;
 
-  lines.forEach(line => {
 
-    const type = line.chart_of_accounts?.account_type;
+  data.forEach(line => {
 
-    if (!type) return;
+    const type =
+      line.chart_of_accounts.account_type;
 
-    //////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////
     // ASSETS
-    //////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+
     if (type === "Asset") {
-      assets += Number(line.debit || 0) - Number(line.credit || 0);
+
+      assets +=
+        Number(line.debit || 0)
+        -
+        Number(line.credit || 0);
+
     }
 
-    //////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////
     // LIABILITIES
-    //////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+
     if (type === "Liability") {
-      liabilities += Number(line.credit || 0) - Number(line.debit || 0);
+
+      liabilities +=
+        Number(line.credit || 0)
+        -
+        Number(line.debit || 0);
+
     }
 
-    //////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////
     // EQUITY
-    //////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+
     if (type === "Equity") {
-      equity += Number(line.credit || 0) - Number(line.debit || 0);
+
+      equity +=
+        Number(line.credit || 0)
+        -
+        Number(line.debit || 0);
+
     }
+
   });
 
 
+  const totalLE =
+    liabilities + equity;
+
+
   //////////////////////////////////////////////////////
-  // FINAL CHECK
+  // UI
   //////////////////////////////////////////////////////
 
-  const balanceCheck = assets - (liabilities + equity);
+  document.getElementById("assets")
+    .innerText =
+      assets.toLocaleString() + " RWF";
 
 
-  renderBalanceSheet(assets, liabilities, equity, balanceCheck);
-}
+  document.getElementById("liabilities")
+    .innerText =
+      liabilities.toLocaleString() + " RWF";
 
 
-//////////////////////////////////////////////////////
-// RENDER UI
-//////////////////////////////////////////////////////
-
-function renderBalanceSheet(assets, liabilities, equity, balanceCheck) {
-
-  document.getElementById("assets").innerText =
-    assets.toFixed(2) + " RWF";
-
-  document.getElementById("liabilities").innerText =
-    liabilities.toFixed(2) + " RWF";
-
-  document.getElementById("equity").innerText =
-    equity.toFixed(2) + " RWF";
-
-  document.getElementById("check").innerText =
-    balanceCheck.toFixed(2);
+  document.getElementById("equity")
+    .innerText =
+      equity.toLocaleString() + " RWF";
 
 
-  if (balanceCheck === 0) {
-    console.log("✔ Balance Sheet is PERFECT");
-  } else {
-    console.log("❌ Balance Sheet NOT balanced");
+  document.getElementById("liabilitiesEquity")
+    .innerText =
+      totalLE.toLocaleString() + " RWF";
+
+
+  //////////////////////////////////////////////////////
+  // VALIDATION
+  //////////////////////////////////////////////////////
+
+  if (Math.abs(assets - totalLE) > 1) {
+
+    alert(
+      "⚠ Balance Sheet out of balance"
+    );
+
   }
+
 }
-
-
-//////////////////////////////////////////////////////
-// LOGOUT
-//////////////////////////////////////////////////////
-
-document.getElementById("logoutBtn").addEventListener("click", async () => {
-  await sb.auth.signOut();
-  window.location.href = "index.html";
-});
