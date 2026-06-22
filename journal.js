@@ -1,133 +1,60 @@
 //////////////////////////////////////////////////////
-// SUPABASE
+// SUPABASE INIT
 //////////////////////////////////////////////////////
 
 const sb = window.supabase.createClient(
-    "https://duznidzlfvadjcoxynjh.supabase.co",
-    "sb_publishable_3UzY44NnUmIi795wKqr2Kg_G0LBpJp4"
+  "https://duznidzlfvadjcoxynjh.supabase.co",
+  "sb_publishable_3UzY44NnUmIi795wKqr2Kg_G0LBpJp4"
 );
 
-
 //////////////////////////////////////////////////////
-// INIT
+// LOAD JOURNAL (FINAL)
 //////////////////////////////////////////////////////
 
-init();
+async function loadJournal() {
 
-async function init(){
+  const { data, error } = await sb
+    .from("journal_entries")
+    .select(`
+      id,
+      entry_date,
+      description,
+      reference,
+      journal_lines(
+        debit,
+        credit,
+        chart_of_accounts(account_name)
+      )
+    `)
+    .order("entry_date", { ascending: false });
 
-    //////////////////////////////////////////////////////
-    // CHECK SESSION
-    //////////////////////////////////////////////////////
+  if (error) {
+    console.log(error.message);
+    return;
+  }
 
-    const { data: sessionData } =
-        await sb.auth.getSession();
+  const container = document.getElementById("journalView");
 
-    if(!sessionData.session){
+  container.innerHTML = data.map(entry => {
 
-        window.location.href="index.html";
-        return;
+    const lines = entry.journal_lines.map(l => `
+      <div>
+        ${l.chart_of_accounts?.account_name || "-"} 
+        | D: ${l.debit} 
+        | C: ${l.credit}
+      </div>
+    `).join("");
 
-    }
-
-
-    //////////////////////////////////////////////////////
-    // GET USER
-    //////////////////////////////////////////////////////
-
-    const user =
-        sessionData.session.user;
-
-
-    //////////////////////////////////////////////////////
-    // GET COMPANY
-    //////////////////////////////////////////////////////
-
-    const { data: company } =
-        await sb
-        .from("companies")
-        .select("*")
-        .eq("user_id",user.id)
-        .single();
-
-
-    //////////////////////////////////////////////////////
-    // LOAD ACCOUNTS
-    //////////////////////////////////////////////////////
-
-    loadAccounts(company.id);
-
-
+    return `
+      <div class="card">
+        <b>${entry.entry_date}</b><br/>
+        ${entry.description}<br/>
+        <small>${entry.reference || ""}</small>
+        <hr/>
+        ${lines}
+      </div>
+    `;
+  }).join("");
 }
 
-
-//////////////////////////////////////////////////////
-// LOAD ACCOUNTS
-//////////////////////////////////////////////////////
-
-async function loadAccounts(companyId){
-
-    const { data } =
-        await sb
-        .from("chart_of_accounts")
-        .select("*")
-        .eq("company_id",companyId)
-        .order("account_code");
-
-
-    const account =
-        document.getElementById("account");
-
-    account.innerHTML="";
-
-
-    data.forEach(acc=>{
-
-        account.innerHTML += `
-
-            <option value="${acc.id}">
-
-                ${acc.account_code}
-                -
-                ${acc.account_name}
-
-            </option>
-
-        `;
-
-    });
-
-}
-
-
-//////////////////////////////////////////////////////
-// SAVE BUTTON
-//////////////////////////////////////////////////////
-
-document
-.getElementById("saveBtn")
-.addEventListener(
-    "click",
-    submitTransaction
-);
-
-
-//////////////////////////////////////////////////////
-// LOGOUT
-//////////////////////////////////////////////////////
-
-document
-.getElementById("logoutBtn")
-.addEventListener(
-    "click",
-    logout
-);
-
-
-async function logout(){
-
-    await sb.auth.signOut();
-
-    window.location.href="index.html";
-
-}
+loadJournal();
