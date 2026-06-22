@@ -1,6 +1,6 @@
-/* =========================
-   GLOBAL
-========================= */
+/* ==========================================
+   RESET
+========================================== */
 
 *{
     margin:0;
@@ -9,15 +9,15 @@
 }
 
 body{
-    font-family:Arial,sans-serif;
+    font-family:Segoe UI, Arial, sans-serif;
     background:#f4f6fb;
-    color:#1f2937;
+    color:#1e293b;
 }
 
 
-/* =========================
+/* ==========================================
    LAYOUT
-========================= */
+========================================== */
 
 .container{
     display:flex;
@@ -25,19 +25,20 @@ body{
 }
 
 
-/* =========================
+/* ==========================================
    SIDEBAR
-========================= */
+========================================== */
 
 .sidebar{
-    width:240px;
-    background:#1e293b;
+    width:250px;
+    background:#0f172a;
     color:white;
     padding:30px 20px;
 }
 
 .sidebar h2{
     margin-bottom:30px;
+    font-size:24px;
 }
 
 .sidebar ul{
@@ -46,14 +47,14 @@ body{
 
 .sidebar li{
     padding:14px;
-    margin-bottom:10px;
     border-radius:10px;
+    margin-bottom:10px;
     cursor:pointer;
-    transition:.3s;
+    transition:0.3s;
 }
 
 .sidebar li:hover{
-    background:#334155;
+    background:#1e293b;
 }
 
 .sidebar li.active{
@@ -70,9 +71,9 @@ body{
 }
 
 
-/* =========================
-   MAIN CONTENT
-========================= */
+/* ==========================================
+   MAIN
+========================================== */
 
 .main{
     flex:1;
@@ -80,36 +81,39 @@ body{
 }
 
 
-/* =========================
-   CARD
-========================= */
+/* ==========================================
+   CARDS
+========================================== */
 
 .card{
     background:white;
-    padding:25px;
     border-radius:16px;
-    box-shadow:0 10px 30px rgba(0,0,0,.08);
+    padding:25px;
     margin-bottom:25px;
+    box-shadow:0 8px 25px rgba(0,0,0,.06);
 }
 
-.card h1,
+.card h1{
+    margin-bottom:10px;
+}
+
 .card h2{
     margin-bottom:15px;
 }
 
 
-/* =========================
-   BUTTON
-========================= */
+/* ==========================================
+   BUTTONS
+========================================== */
 
 button{
-    padding:12px 18px;
+    border:none;
+    padding:12px 20px;
     background:#2563eb;
     color:white;
-    border:none;
     border-radius:10px;
     cursor:pointer;
-    font-weight:bold;
+    font-weight:600;
     transition:.3s;
 }
 
@@ -118,9 +122,43 @@ button:hover{
 }
 
 
-/* =========================
+/* ==========================================
+   FILTERS
+========================================== */
+
+.filters{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+.filters input,
+.filters select{
+
+    padding:12px;
+    border:1px solid #d1d5db;
+    border-radius:10px;
+    background:white;
+    min-width:220px;
+
+}
+
+.filters input:focus,
+.filters select:focus{
+
+    outline:none;
+    border-color:#2563eb;
+
+}
+
+
+/* ==========================================
    TABLE
-========================= */
+========================================== */
+
+.table-container{
+    overflow-x:auto;
+}
 
 table{
     width:100%;
@@ -128,47 +166,111 @@ table{
 }
 
 th{
-    background:#e5e7eb;
-    padding:14px;
+    background:#e2e8f0;
+    color:#0f172a;
+    padding:15px;
     text-align:left;
+    font-size:14px;
 }
 
 td{
     padding:14px;
     border-bottom:1px solid #e5e7eb;
+    font-size:14px;
 }
 
-tr:hover{
-    background:#f9fafb;
+tbody tr:hover{
+    background:#f8fafc;
 }
 
 
-/* =========================
-   STATUS BADGES
-========================= */
+/* ==========================================
+   BADGES
+========================================== */
 
-.status-active{
+.badge-active{
     background:#dcfce7;
     color:#166534;
     padding:6px 12px;
-    border-radius:20px;
-    font-size:13px;
+    border-radius:30px;
+    font-size:12px;
     font-weight:bold;
 }
 
-.status-inactive{
+.badge-inactive{
     background:#fee2e2;
     color:#991b1b;
     padding:6px 12px;
-    border-radius:20px;
-    font-size:13px;
+    border-radius:30px;
+    font-size:12px;
     font-weight:bold;
 }
 
 
-/* =========================
+/* ==========================================
+   ACCOUNT TYPES
+========================================== */
+
+.asset{
+    color:#2563eb;
+    font-weight:600;
+}
+
+.liability{
+    color:#dc2626;
+    font-weight:600;
+}
+
+.equity{
+    color:#7c3aed;
+    font-weight:600;
+}
+
+.revenue{
+    color:#16a34a;
+    font-weight:600;
+}
+
+.expense{
+    color:#ea580c;
+    font-weight:600;
+}
+
+
+/* ==========================================
+   SEARCH BOX
+========================================== */
+
+.search-box{
+    width:350px;
+    max-width:100%;
+    padding:12px;
+    border:1px solid #d1d5db;
+    border-radius:10px;
+}
+
+.search-box:focus{
+    outline:none;
+    border-color:#2563eb;
+}
+
+
+/* ==========================================
+   TOTAL COUNTER
+========================================== */
+
+.total-box{
+    background:#eff6ff;
+    color:#1d4ed8;
+    padding:15px;
+    border-radius:12px;
+    font-weight:600;
+}
+
+
+/* ==========================================
    RESPONSIVE
-========================= */
+========================================== */
 
 @media(max-width:900px){
 
@@ -180,9 +282,12 @@ tr:hover{
         width:100%;
     }
 
-    table{
-        display:block;
-        overflow-x:auto;
+    .main{
+        padding:15px;
+    }
+
+    .filters{
+        flex-direction:column;
     }
 
 }
