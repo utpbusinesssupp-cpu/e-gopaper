@@ -30,11 +30,11 @@
                 Chart of Accounts
             </li>
 
-            <li>
+            <li onclick="window.location.href='journal.html'">
                 Transactions
             </li>
 
-            <li>
+            <li onclick="window.location.href='ledger.html'">
                 General Ledger
             </li>
 
@@ -55,17 +55,53 @@
     </aside>
 
 
-    <!-- MAIN -->
+    <!-- MAIN CONTENT -->
     <main class="main">
 
-        <!-- PAGE HEADER -->
+        <!-- HEADER -->
         <section class="card">
 
             <h1>Chart of Accounts</h1>
 
             <p>
-                Manage your accounting structure and ledger accounts.
+                Manage the accounting structure of your business.
             </p>
+
+        </section>
+
+
+        <!-- SUMMARY -->
+        <section class="summary">
+
+            <div class="summary-card">
+                <h3>Total Accounts</h3>
+                <p id="totalAccounts">0</p>
+            </div>
+
+            <div class="summary-card">
+                <h3>Assets</h3>
+                <p id="assetCount">0</p>
+            </div>
+
+            <div class="summary-card">
+                <h3>Liabilities</h3>
+                <p id="liabilityCount">0</p>
+            </div>
+
+            <div class="summary-card">
+                <h3>Equity</h3>
+                <p id="equityCount">0</p>
+            </div>
+
+            <div class="summary-card">
+                <h3>Revenue</h3>
+                <p id="revenueCount">0</p>
+            </div>
+
+            <div class="summary-card">
+                <h3>Expenses</h3>
+                <p id="expenseCount">0</p>
+            </div>
 
         </section>
 
@@ -73,54 +109,80 @@
         <!-- ACTIONS -->
         <section class="card">
 
-            <button id="addAccountBtn">
-                + Add Account
-            </button>
+            <div class="actions">
+
+                <input
+                    type="text"
+                    id="searchAccount"
+                    placeholder="Search account..."
+                >
+
+                <button id="addAccountBtn">
+                    + Add Account
+                </button>
+
+            </div>
 
         </section>
 
 
-        <!-- ACCOUNTS TABLE -->
+        <!-- TABLE -->
         <section class="card">
 
             <h2>Accounts</h2>
 
-            <table>
+            <div class="table-container">
 
-                <thead>
+                <table>
 
-                <tr>
+                    <thead>
 
-                    <th>Code</th>
+                        <tr>
 
-                    <th>Account Name</th>
+                            <th>Code</th>
 
-                    <th>Type</th>
+                            <th>Account Name</th>
 
-                    <th>Status</th>
+                            <th>Type</th>
 
-                </tr>
+                            <th>Status</th>
 
-                </thead>
+                        </tr>
 
-                <tbody id="accountsTable">
+                    </thead>
 
-                <tr>
+                    <tbody id="accountsTable">
 
-                    <td colspan="4">
+                        <tr>
 
-                        No accounts found.
+                            <td colspan="4">
 
-                    </td>
+                                Loading accounts...
 
-                </tr>
+                            </td>
 
-                </tbody>
+                        </tr>
 
-            </table>
+                    </tbody>
+
+                </table>
+
+            </div>
 
         </section>
 
+
+        <!-- FOOTER -->
+        <section class="card">
+
+            <small>
+
+                Accounts are automatically created when a new company is onboarded.
+                Additional accounts can be added later without affecting reports.
+
+            </small>
+
+        </section>
 
     </main>
 
