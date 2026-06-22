@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Income Statement | e-Gopaper ERP</title>
+
+<link rel="stylesheet" href="dashboard.css">
+
+</head>
+<body>
+
+<div class="container">
+
+<aside class="sidebar">
+
+<h2>e-Gopaper</h2>
+
+<ul>
+
+<li onclick="window.location.href='dashboard.html'">
+Dashboard
+</li>
+
+<li onclick="window.location.href='ledger.html'">
+General Ledger
+</li>
+
+<li onclick="window.location.href='trial-balance.html'">
+Trial Balance
+</li>
+
+<li class="active">
+Income Statement
+</li>
+
+<li id="logoutBtn">
+Logout
+</li>
+
+</ul>
+
+</aside>
+
+
+<main class="main">
+
+<section class="card">
+
+<h1>Income Statement</h1>
+
+<p>
+Profit & Loss Report
+</p>
+
+</section>
+
+
+<section class="card">
+
+<h2>Revenue</h2>
+
+<p id="totalRevenue">
+
+0
+
+</p>
+
+</section>
+
+
+<section class="card">
+
+<h2>Expenses</h2>
+
+<p id="totalExpenses">
+
+0
+
+</p>
+
+</section>
+
+
+<section class="card">
+
+<h2>Net Profit</h2>
+
+<h1 id="netProfit">
+
+0
+
+</h1>
+
+</section>
+
+</main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="income-statement.js"></script>
+
+</body>
+</html>
