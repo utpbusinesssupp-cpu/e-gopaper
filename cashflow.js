@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////
-// SUPABASE INIT
+// SUPABASE
 //////////////////////////////////////////////////////
 
 const sb = window.supabase.createClient(
@@ -16,19 +16,19 @@ init();
 
 async function init() {
 
-  const { data: sessionData } = await sb.auth.getSession();
+  const { data: sessionData } =
+    await sb.auth.getSession();
 
   if (!sessionData.session) {
+
     window.location.href = "index.html";
+
     return;
+
   }
 
   const user = sessionData.session.user;
 
-
-  //////////////////////////////////////////////////////
-  // GET COMPANY
-  //////////////////////////////////////////////////////
 
   const { data: company } = await sb
     .from("companies")
@@ -37,98 +37,81 @@ async function init() {
     .single();
 
 
-  //////////////////////////////////////////////////////
-  // GET CASH ACCOUNT (1000)
-  //////////////////////////////////////////////////////
+  await loadCashFlow(company.id);
 
-  const { data: cashAccount } = await sb
-    .from("chart_of_accounts")
-    .select("id")
-    .eq("company_id", company.id)
-    .eq("account_code", "1000")
-    .single();
+}
 
 
-  //////////////////////////////////////////////////////
-  // GET CASH MOVEMENTS
-  //////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+// LOAD CASH FLOW
+//////////////////////////////////////////////////////
 
-  const { data: lines, error } = await sb
+async function loadCashFlow(companyId) {
+
+  const { data, error } = await sb
     .from("journal_lines")
     .select(`
       debit,
       credit,
-      account_id,
-      chart_of_accounts (
-        account_code,
-        account_name
+      chart_of_accounts(
+        account_code
       )
     `)
-    .eq("company_id", company.id);
+    .eq("company_id", companyId);
 
   if (error) {
-    alert(error.message);
+
+    console.log(error.message);
+
     return;
+
   }
 
 
-  //////////////////////////////////////////////////////
-  // CASH FLOW CALCULATION
-  //////////////////////////////////////////////////////
-
   let cashIn = 0;
+
   let cashOut = 0;
 
-  lines.forEach(line => {
 
-    const isCash = line.account_id === cashAccount.id;
+  data.forEach(line => {
 
-    if (!isCash) return;
+    const code =
+      line.chart_of_accounts.account_code;
 
-    // CASH INFLOW
-    cashIn += Number(line.debit || 0);
 
-    // CASH OUTFLOW
-    cashOut += Number(line.credit || 0);
+    ////////////////////////////////////////////////////
+    // CASH ACCOUNT
+    ////////////////////////////////////////////////////
+
+    if (code === "1000") {
+
+      cashIn += Number(line.debit || 0);
+
+      cashOut += Number(line.credit || 0);
+
+    }
+
   });
 
 
-  const netCashFlow = cashIn - cashOut;
+  const netCashFlow =
+    cashIn - cashOut;
 
 
-  renderCashFlow(cashIn, cashOut, netCashFlow);
+  //////////////////////////////////////////////////////
+  // UI
+  //////////////////////////////////////////////////////
+
+  document.getElementById("cashIn")
+    .innerText =
+      cashIn.toLocaleString() + " RWF";
+
+  document.getElementById("cashOut")
+    .innerText =
+      cashOut.toLocaleString() + " RWF";
+
+  document.getElementById("netCashFlow")
+    .innerText =
+      netCashFlow.toLocaleString() + " RWF";
+
 }
-
-
-//////////////////////////////////////////////////////
-// RENDER UI
-//////////////////////////////////////////////////////
-
-function renderCashFlow(inflow, outflow, net) {
-
-  document.getElementById("cashIn").innerText =
-    inflow.toFixed(2) + " RWF";
-
-  document.getElementById("cashOut").innerText =
-    outflow.toFixed(2) + " RWF";
-
-  document.getElementById("netCash").innerText =
-    net.toFixed(2) + " RWF";
-
-
-  if (net >= 0) {
-    console.log("✔ Positive Cash Flow");
-  } else {
-    console.log("❌ Negative Cash Flow");
-  }
-}
-
-
-//////////////////////////////////////////////////////
-// LOGOUT
-//////////////////////////////////////////////////////
-
-document.getElementById("logoutBtn").addEventListener("click", async () => {
-  await sb.auth.signOut();
-  window.location.href = "index.html";
-});
