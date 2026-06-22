@@ -1,14 +1,18 @@
 //////////////////////////////////////////////////////
-// SUPABASE INIT
+// SUPABASE CLIENT (GLOBAL STANDARD)
 //////////////////////////////////////////////////////
 
 const sb = window.sb;
 
 //////////////////////////////////////////////////////
-// LOAD JOURNAL (FINAL)
+// LOAD JOURNAL ENTRIES (V1 FINAL)
 //////////////////////////////////////////////////////
 
-async function loadJournal() {
+async function loadJournal(companyId) {
+
+  //////////////////////////////////////////////////////
+  // FETCH JOURNAL ENTRIES (MULTI-TENANT SAFE)
+  //////////////////////////////////////////////////////
 
   const { data, error } = await sb
     .from("journal_entries")
@@ -23,35 +27,99 @@ async function loadJournal() {
         chart_of_accounts(account_name)
       )
     `)
+    .eq("company_id", companyId)
     .order("entry_date", { ascending: false });
 
   if (error) {
-    console.log(error.message);
+    console.log("Journal Error:", error.message);
     return;
   }
 
+  renderJournal(data || []);
+}
+
+//////////////////////////////////////////////////////
+// RENDER JOURNAL (ERP-GRADE VIEW ENGINE)
+//////////////////////////////////////////////////////
+
+function renderJournal(entries) {
+
   const container = document.getElementById("journalView");
 
-  container.innerHTML = data.map(entry => {
+  if (!container) return;
 
-    const lines = entry.journal_lines.map(l => `
-      <div>
-        ${l.chart_of_accounts?.account_name || "-"} 
-        | D: ${l.debit} 
-        | C: ${l.credit}
+  container.innerHTML = "";
+
+  if (!entries.length) {
+    container.innerHTML = `
+      <div class="card">
+        No journal entries found
       </div>
-    `).join("");
+    `;
+    return;
+  }
+
+  //////////////////////////////////////////////////////
+  // RENDER EACH ENTRY
+  //////////////////////////////////////////////////////
+
+  container.innerHTML = entries.map(entry => {
+
+    const lines = (entry.journal_lines || []).map(l => {
+
+      const debit = Number(l.debit || 0);
+      const credit = Number(l.credit || 0);
+
+      return `
+        <div class="journal-line">
+          <span class="acc">
+            ${l.chart_of_accounts?.account_name || "-"}
+          </span>
+          <span class="debit">D: ${debit.toLocaleString()}</span>
+          <span class="credit">C: ${credit.toLocaleString()}</span>
+        </div>
+      `;
+    }).join("");
 
     return `
-      <div class="card">
-        <b>${entry.entry_date}</b><br/>
-        ${entry.description}<br/>
-        <small>${entry.reference || ""}</small>
+      <div class="card journal-entry">
+
+        <div class="journal-header">
+          <div class="date">${entry.entry_date}</div>
+          <div class="desc">${entry.description}</div>
+          <div class="ref">${entry.reference || ""}</div>
+        </div>
+
         <hr/>
-        ${lines}
+
+        <div class="journal-lines">
+          ${lines}
+        </div>
+
       </div>
     `;
   }).join("");
 }
 
-loadJournal();
+//////////////////////////////////////////////////////
+// AUTO BOOTSTRAP (SAFE ENTRY POINT)
+//////////////////////////////////////////////////////
+
+(async () => {
+
+  const { data: session } = await sb.auth.getSession();
+
+  const user = session?.session?.user;
+  if (!user) return;
+
+  const { data: company } = await sb
+    .from("companies")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!company) return;
+
+  await loadJournal(company.id);
+
+})();
