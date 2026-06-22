@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////
-// SUPABASE INIT
+// SUPABASE
 //////////////////////////////////////////////////////
 
 const sb = window.supabase.createClient(
@@ -16,18 +16,22 @@ init();
 
 async function init() {
 
-  const { data: sessionData } = await sb.auth.getSession();
+  const { data: sessionData } =
+    await sb.auth.getSession();
 
   if (!sessionData.session) {
+
     window.location.href = "index.html";
+
     return;
+
   }
 
   const user = sessionData.session.user;
 
 
   //////////////////////////////////////////////////////
-  // GET COMPANY
+  // COMPANY
   //////////////////////////////////////////////////////
 
   const { data: company } = await sb
@@ -37,130 +41,157 @@ async function init() {
     .single();
 
 
-  //////////////////////////////////////////////////////
-  // GET ALL ACCOUNTS
-  //////////////////////////////////////////////////////
+  await loadTrialBalance(company.id);
 
-  const { data: accounts } = await sb
-    .from("chart_of_accounts")
-    .select("*")
-    .eq("company_id", company.id);
+}
 
 
-  //////////////////////////////////////////////////////
-  // GET ALL JOURNAL LINES
-  //////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+// LOAD TRIAL BALANCE
+//////////////////////////////////////////////////////
 
-  const { data: lines, error } = await sb
+async function loadTrialBalance(companyId) {
+
+  const { data, error } = await sb
     .from("journal_lines")
     .select(`
       debit,
       credit,
-      chart_of_accounts (
-        id,
-        account_name,
-        account_code
+      chart_of_accounts(
+        account_code,
+        account_name
       )
     `)
-    .eq("company_id", company.id);
+    .eq("company_id", companyId);
+
 
   if (error) {
-    alert(error.message);
+
+    console.log(error.message);
+
     return;
+
   }
 
 
   //////////////////////////////////////////////////////
-  // BUILD TRIAL BALANCE
+  // GROUP BY ACCOUNT
   //////////////////////////////////////////////////////
 
-  const report = {};
+  let grouped = {};
 
-  lines.forEach(line => {
+  data.forEach(line => {
 
-    const acc = line.chart_of_accounts;
+    const code =
+      line.chart_of_accounts.account_code;
 
-    if (!acc) return;
+    if (!grouped[code]) {
 
-    const key = acc.id;
+      grouped[code] = {
 
-    if (!report[key]) {
-      report[key] = {
-        account_code: acc.account_code,
-        account_name: acc.account_name,
+        account_name:
+          line.chart_of_accounts.account_name,
+
         debit: 0,
+
         credit: 0
+
       };
+
     }
 
-    report[key].debit += Number(line.debit || 0);
-    report[key].credit += Number(line.credit || 0);
+    grouped[code].debit +=
+      Number(line.debit || 0);
+
+    grouped[code].credit +=
+      Number(line.credit || 0);
+
   });
 
 
-  renderTrialBalance(Object.values(report));
+  renderTrialBalance(grouped);
+
 }
 
 
 //////////////////////////////////////////////////////
-// RENDER TABLE
+// RENDER
 //////////////////////////////////////////////////////
 
-function renderTrialBalance(data) {
+function renderTrialBalance(grouped) {
 
-  const tbody = document.getElementById("trialTable");
+  const tbody =
+    document.getElementById("trialBalanceTable");
 
   tbody.innerHTML = "";
 
+
   let totalDebit = 0;
+
   let totalCredit = 0;
 
-  if (!data.length) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="4">No data found</td>
-      </tr>
-    `;
-    return;
-  }
 
-  data.forEach(acc => {
+  Object.entries(grouped)
+
+  .sort()
+
+  .forEach(([code, acc]) => {
 
     totalDebit += acc.debit;
+
     totalCredit += acc.credit;
 
+
     tbody.innerHTML += `
-      <tr>
-        <td>${acc.account_code}</td>
-        <td>${acc.account_name}</td>
-        <td>${acc.debit.toFixed(2)}</td>
-        <td>${acc.credit.toFixed(2)}</td>
-      </tr>
+
+    <tr>
+
+      <td>${code}</td>
+
+      <td>${acc.account_name}</td>
+
+      <td>
+
+        ${acc.debit.toLocaleString()}
+
+      </td>
+
+      <td>
+
+        ${acc.credit.toLocaleString()}
+
+      </td>
+
+    </tr>
+
     `;
+
   });
 
-  // FOOTER ROW
-  tbody.innerHTML += `
-    <tr style="font-weight:bold;background:#f3f4f6">
-      <td colspan="2">TOTAL</td>
-      <td>${totalDebit.toFixed(2)}</td>
-      <td>${totalCredit.toFixed(2)}</td>
-    </tr>
-  `;
 
-  if (totalDebit === totalCredit) {
-    console.log("✔ Trial Balance OK");
-  } else {
-    console.log("❌ Trial Balance NOT BALANCED");
+  //////////////////////////////////////////////////////
+  // TOTALS
+  //////////////////////////////////////////////////////
+
+  document.getElementById("totalDebit")
+    .innerText =
+      totalDebit.toLocaleString();
+
+  document.getElementById("totalCredit")
+    .innerText =
+      totalCredit.toLocaleString();
+
+
+  //////////////////////////////////////////////////////
+  // VALIDATION
+  //////////////////////////////////////////////////////
+
+  if (totalDebit !== totalCredit) {
+
+    alert(
+      "⚠ Trial Balance out of balance!"
+    );
+
   }
+
 }
-
-
-//////////////////////////////////////////////////////
-// LOGOUT
-//////////////////////////////////////////////////////
-
-document.getElementById("logoutBtn").addEventListener("click", async () => {
-  await sb.auth.signOut();
-  window.location.href = "index.html";
-});
