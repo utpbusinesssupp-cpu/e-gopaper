@@ -1,11 +1,11 @@
 //////////////////////////////////////////////////////
-// SUPABASE INIT
+// SUPABASE CLIENT (GLOBAL STANDARD)
 //////////////////////////////////////////////////////
 
 const sb = window.sb;
 
 //////////////////////////////////////////////////////
-// 🟣 1. EBM CLASSIFICATION ENGINE
+// 🟣 1. EBM CLASSIFICATION ENGINE (CLEAN)
 //////////////////////////////////////////////////////
 
 function classifyEBM(description) {
@@ -20,7 +20,7 @@ function classifyEBM(description) {
 }
 
 //////////////////////////////////////////////////////
-// 🟣 2. PAYE ENGINE (SALARY TAX)
+// 🟣 2. PAYE ENGINE (Rwanda Progressive Tax)
 //////////////////////////////////////////////////////
 
 function calculatePAYE(amount) {
@@ -28,13 +28,15 @@ function calculatePAYE(amount) {
   let tax = 0;
 
   if (amount <= 300000) {
-    tax = amount * 0.0;
-  } 
+    tax = 0;
+  }
+
   else if (amount <= 1000000) {
-    tax = (amount - 300000) * 0.2;
-  } 
+    tax = (amount - 300000) * 0.20;
+  }
+
   else {
-    tax = (700000 * 0.2) + (amount - 1000000) * 0.3;
+    tax = (700000 * 0.20) + (amount - 1000000) * 0.30;
   }
 
   return {
@@ -49,11 +51,16 @@ function calculatePAYE(amount) {
 //////////////////////////////////////////////////////
 
 function calculateWithholding(amount) {
+
+  const rate = 0.15;
+
+  const tax = amount * rate;
+
   return {
     base: amount,
-    rate: 0.15,
-    tax: amount * 0.15,
-    net: amount - (amount * 0.15)
+    rate,
+    tax,
+    net: amount - tax
   };
 }
 
@@ -63,8 +70,11 @@ function calculateWithholding(amount) {
 
 function calculateRSSB(salary) {
 
-  const employee = salary * 0.05;
-  const employer = salary * 0.05;
+  const employeeRate = 0.05;
+  const employerRate = 0.05;
+
+  const employee = salary * employeeRate;
+  const employer = salary * employerRate;
 
   return {
     employee,
@@ -74,22 +84,22 @@ function calculateRSSB(salary) {
 }
 
 //////////////////////////////////////////////////////
-// 🟣 5. TRANSACTION TAX CLASSIFIER (CORE)
+// 🟣 5. TRANSACTION TAX CLASSIFIER (CORE ENGINE)
 //////////////////////////////////////////////////////
 
 function classifyTransactionTax(description, type, amount) {
 
-  const ebm = classifyEBM(description);
+  const ebm_status = classifyEBM(description);
 
-  let result = {
-    ebm_status: ebm,
+  const result = {
+    ebm_status,
     paye: null,
     withholding: null,
     rssb: null
   };
 
   //////////////////////////////////////////////////////
-  // PAYE
+  // PAYE (ONLY SALARY)
   //////////////////////////////////////////////////////
 
   if (type === "salary") {
@@ -98,7 +108,7 @@ function classifyTransactionTax(description, type, amount) {
   }
 
   //////////////////////////////////////////////////////
-  // WITHHOLDING TAX
+  // WITHHOLDING (SERVICE ONLY)
   //////////////////////////////////////////////////////
 
   if (type === "service") {
@@ -109,7 +119,7 @@ function classifyTransactionTax(description, type, amount) {
 }
 
 //////////////////////////////////////////////////////
-// 🟣 6. SAVE TAX RECORD
+// 🟣 6. SAVE TAX RECORD (SAFE + MULTI-TENANT)
 //////////////////////////////////////////////////////
 
 async function saveTaxRecord({
@@ -130,12 +140,12 @@ async function saveTaxRecord({
     }]);
 
   if (error) {
-    console.log("Tax save error:", error.message);
+    console.log("Tax Save Error:", error.message);
   }
 }
 
 //////////////////////////////////////////////////////
-// 🟣 7. TAX REPORT ENGINE
+// 🟣 7. TAX REPORT ENGINE (ERP READY)
 //////////////////////////////////////////////////////
 
 async function generateTaxReports(companyId) {
@@ -145,35 +155,37 @@ async function generateTaxReports(companyId) {
     .select("*")
     .eq("company_id", companyId);
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new Error(error.message);
+  }
 
-  let ebm = 0;
+  let ebm_supported = 0;
   let non_ebm = 0;
-  let total_paye = 0;
-  let total_withholding = 0;
+  let total_paye_tax = 0;
+  let total_withholding_tax = 0;
   let total_rssb = 0;
 
-  data.forEach(t => {
+  (data || []).forEach(t => {
 
-    if (t.ebm_status === "EBM_SUPPORTED") ebm++;
+    if (t.ebm_status === "EBM_SUPPORTED") ebm_supported++;
     else non_ebm++;
 
-    if (t.paye) total_paye += t.paye.tax || 0;
-    if (t.withholding) total_withholding += t.withholding.tax || 0;
-    if (t.rssb) total_rssb += t.rssb.total || 0;
+    total_paye_tax += t.paye?.tax || 0;
+    total_withholding_tax += t.withholding?.tax || 0;
+    total_rssb += t.rssb?.total || 0;
   });
 
   return {
-    ebm_supported: ebm,
-    non_ebm: non_ebm,
-    total_paye_tax: total_paye,
-    total_withholding_tax: total_withholding,
-    total_rssb: total_rssb
+    ebm_supported,
+    non_ebm,
+    total_paye_tax,
+    total_withholding_tax,
+    total_rssb
   };
 }
 
 //////////////////////////////////////////////////////
-// 🟣 8. MASTER TAX HOOK (TO JOURNAL ENGINE)
+// 🟣 8. MASTER TAX HOOK (INTEGRATION POINT)
 //////////////////////////////////////////////////////
 
 async function applyTaxEngine({
@@ -184,7 +196,11 @@ async function applyTaxEngine({
   amount
 }) {
 
-  const taxData = classifyTransactionTax(description, type, amount);
+  const taxData = classifyTransactionTax(
+    description,
+    type,
+    amount
+  );
 
   await saveTaxRecord({
     companyId,
@@ -192,7 +208,7 @@ async function applyTaxEngine({
     taxData
   });
 
-  console.log("Tax Applied:", taxData);
+  console.log("🧾 TAX APPLIED:", taxData);
 
   return taxData;
 }
