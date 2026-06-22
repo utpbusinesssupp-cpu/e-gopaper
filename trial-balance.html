@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Trial Balance | e-Gopaper ERP</title>
+
+<link rel="stylesheet" href="dashboard.css">
+
+</head>
+<body>
+
+<div class="container">
+
+<aside class="sidebar">
+
+<h2>e-Gopaper</h2>
+
+<ul>
+
+<li onclick="window.location.href='dashboard.html'">
+Dashboard
+</li>
+
+<li onclick="window.location.href='chart-of-accounts.html'">
+Chart of Accounts
+</li>
+
+<li onclick="window.location.href='journal.html'">
+Transactions
+</li>
+
+<li onclick="window.location.href='ledger.html'">
+General Ledger
+</li>
+
+<li class="active">
+Trial Balance
+</li>
+
+<li id="logoutBtn">
+Logout
+</li>
+
+</ul>
+
+</aside>
+
+
+<main class="main">
+
+<section class="card">
+
+<h1>Trial Balance</h1>
+
+<p>
+Debits and Credits validation report
+</p>
+
+</section>
+
+
+<section class="card">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Code</th>
+<th>Account</th>
+<th>Debit</th>
+<th>Credit</th>
+</tr>
+
+</thead>
+
+<tbody id="trialBalanceTable">
+
+<tr>
+<td colspan="4">
+Loading...
+</td>
+</tr>
+
+</tbody>
+
+<tfoot>
+
+<tr>
+
+<th colspan="2">
+TOTAL
+</th>
+
+<th id="totalDebit">
+0
+</th>
+
+<th id="totalCredit">
+0
+</th>
+
+</tr>
+
+</tfoot>
+
+</table>
+
+</section>
+
+</main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="trial-balance.js"></script>
+
+</body>
+</html>
