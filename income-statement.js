@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////
-// SUPABASE INIT
+// SUPABASE
 //////////////////////////////////////////////////////
 
 const sb = window.supabase.createClient(
@@ -16,19 +16,19 @@ init();
 
 async function init() {
 
-  const { data: sessionData } = await sb.auth.getSession();
+  const { data: sessionData }
+    = await sb.auth.getSession();
 
   if (!sessionData.session) {
+
     window.location.href = "index.html";
+
     return;
+
   }
 
   const user = sessionData.session.user;
 
-
-  //////////////////////////////////////////////////////
-  // GET COMPANY
-  //////////////////////////////////////////////////////
 
   const { data: company } = await sb
     .from("companies")
@@ -37,88 +37,91 @@ async function init() {
     .single();
 
 
-  //////////////////////////////////////////////////////
-  // GET JOURNAL LINES
-  //////////////////////////////////////////////////////
+  await loadIncomeStatement(company.id);
 
-  const { data: lines, error } = await sb
+}
+
+
+//////////////////////////////////////////////////////
+// LOAD P&L
+//////////////////////////////////////////////////////
+
+async function loadIncomeStatement(companyId) {
+
+  const { data, error } = await sb
     .from("journal_lines")
     .select(`
       debit,
       credit,
-      chart_of_accounts (
-        account_type,
-        account_name
+      chart_of_accounts(
+        account_type
       )
     `)
-    .eq("company_id", company.id);
+    .eq("company_id", companyId);
+
 
   if (error) {
-    alert(error.message);
+
+    console.log(error.message);
+
     return;
+
   }
 
 
-  //////////////////////////////////////////////////////
-  // CALCULATE INCOME STATEMENT
-  //////////////////////////////////////////////////////
-
   let revenue = 0;
+
   let expenses = 0;
 
-  lines.forEach(line => {
 
-    const type = line.chart_of_accounts?.account_type;
+  data.forEach(line => {
 
-    if (!type) return;
+    const type =
+      line.chart_of_accounts.account_type;
 
-    // REVENUE ACCOUNTS
+
+    ////////////////////////////////////////////////////
+    // REVENUE
+    ////////////////////////////////////////////////////
+
     if (type === "Revenue") {
-      revenue += Number(line.credit || 0) - Number(line.debit || 0);
+
+      revenue += Number(line.credit || 0);
+
     }
 
-    // EXPENSE ACCOUNTS
+
+    ////////////////////////////////////////////////////
+    // EXPENSE
+    ////////////////////////////////////////////////////
+
     if (type === "Expense") {
-      expenses += Number(line.debit || 0) - Number(line.credit || 0);
+
+      expenses += Number(line.debit || 0);
+
     }
+
   });
 
 
-  const profit = revenue - expenses;
+  const netProfit =
+    revenue - expenses;
 
-  renderIncomeStatement(revenue, expenses, profit);
+
+  //////////////////////////////////////////////////////
+  // UI
+  //////////////////////////////////////////////////////
+
+  document.getElementById("totalRevenue")
+    .innerText =
+      revenue.toLocaleString() + " RWF";
+
+  document.getElementById("totalExpenses")
+    .innerText =
+      expenses.toLocaleString() + " RWF";
+
+  document.getElementById("netProfit")
+    .innerText =
+      netProfit.toLocaleString() + " RWF";
+
 }
-
-
-//////////////////////////////////////////////////////
-// RENDER UI
-//////////////////////////////////////////////////////
-
-function renderIncomeStatement(revenue, expenses, profit) {
-
-  document.getElementById("revenue").innerText =
-    revenue.toFixed(2) + " RWF";
-
-  document.getElementById("expenses").innerText =
-    expenses.toFixed(2) + " RWF";
-
-  document.getElementById("profit").innerText =
-    profit.toFixed(2) + " RWF";
-
-
-  if (profit >= 0) {
-    console.log("✔ Profit: " + profit);
-  } else {
-    console.log("❌ Loss: " + profit);
-  }
-}
-
-
-//////////////////////////////////////////////////////
-// LOGOUT
-//////////////////////////////////////////////////////
-
-document.getElementById("logoutBtn").addEventListener("click", async () => {
-  await sb.auth.signOut();
-  window.location.href = "index.html";
-});
