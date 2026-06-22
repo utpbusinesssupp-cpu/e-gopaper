@@ -1,14 +1,11 @@
 //////////////////////////////////////////////////////
-// SUPABASE INIT
+// 🧠 AI CFO ENGINE — V1 FINAL CLEAN ARCHITECTURE
 //////////////////////////////////////////////////////
 
-const sb = window.supabase.createClient(
-  "https://duznidzlfvadjcoxynjh.supabase.co",
-  "sb_publishable_3UzY44NnUmIi795wKqr2Kg_G0LBpJp4"
-);
+const sb = window.sb; // IMPORTANT (V1 STANDARD)
 
 //////////////////////////////////////////////////////
-// 🟣 1. FINANCIAL HEALTH SCORE
+// 1. FINANCIAL HEALTH SCORE
 //////////////////////////////////////////////////////
 
 function calculateFinancialHealth({ revenue, expenses, cashflow }) {
@@ -17,7 +14,7 @@ function calculateFinancialHealth({ revenue, expenses, cashflow }) {
 
   if (revenue > expenses) score += 20;
   if (cashflow > 0) score += 20;
-  if (expenses / revenue > 0.7) score -= 20;
+  if (revenue > 0 && expenses / revenue < 0.7) score += 10;
 
   let level = "AVERAGE";
 
@@ -29,91 +26,7 @@ function calculateFinancialHealth({ revenue, expenses, cashflow }) {
 }
 
 //////////////////////////////////////////////////////
-// 🟣 2. EXPENSE ANOMALY DETECTION
-//////////////////////////////////////////////////////
-
-function detectExpenseAnomalies(transactions) {
-
-  const anomalies = [];
-
-  const avg = transactions.reduce((a, b) => a + b.amount, 0) / transactions.length;
-
-  transactions.forEach(t => {
-
-    if (t.amount > avg * 2) {
-      anomalies.push({
-        type: "HIGH_EXPENSE",
-        message: `Unusual expense detected: ${t.amount}`
-      });
-    }
-  });
-
-  return anomalies;
-}
-
-//////////////////////////////////////////////////////
-// 🟣 3. PROFIT FORECASTING (SIMPLE AI TREND)
-//////////////////////////////////////////////////////
-
-function forecastProfit(history) {
-
-  if (!history.length) return 0;
-
-  const growthRates = [];
-
-  for (let i = 1; i < history.length; i++) {
-    const growth = (history[i] - history[i - 1]) / history[i - 1];
-    growthRates.push(growth);
-  }
-
-  const avgGrowth =
-    growthRates.reduce((a, b) => a + b, 0) / growthRates.length;
-
-  const next = history[history.length - 1] * (1 + avgGrowth);
-
-  return next;
-}
-
-//////////////////////////////////////////////////////
-// 🟣 4. CASHFLOW PREDICTION
-//////////////////////////////////////////////////////
-
-function predictCashflow(inflow, outflow) {
-
-  const net = inflow - outflow;
-
-  return {
-    currentNet: net,
-    trend: net > 0 ? "POSITIVE" : "NEGATIVE",
-    warning: net < 0 ? "Cash risk detected" : null
-  };
-}
-
-//////////////////////////////////////////////////////
-// 🟣 5. SMART RECOMMENDATIONS ENGINE
-//////////////////////////////////////////////////////
-
-function generateRecommendations({ revenue, expenses, cashflow }) {
-
-  const recs = [];
-
-  if (expenses > revenue) {
-    recs.push("Reduce operational expenses immediately");
-  }
-
-  if (cashflow < 0) {
-    recs.push("Improve liquidity management");
-  }
-
-  if (revenue < 1000000) {
-    recs.push("Focus on revenue growth strategies");
-  }
-
-  return recs;
-}
-
-//////////////////////////////////////////////////////
-// 🟣 6. BUSINESS RISK SCORE
+// 2. RISK SCORE
 //////////////////////////////////////////////////////
 
 function calculateBusinessRisk({ revenue, expenses, cashflow }) {
@@ -133,70 +46,100 @@ function calculateBusinessRisk({ revenue, expenses, cashflow }) {
 }
 
 //////////////////////////////////////////////////////
-// 🟣 7. AI CFO MASTER REPORT
+// 3. RECOMMENDATIONS ENGINE
 //////////////////////////////////////////////////////
 
-async function generateAICFODashboard(companyId) {
+function generateRecommendations({ revenue, expenses, cashflow }) {
 
-  const { data: lines } = await sb
-    .from("journal_lines")
-    .select("debit, credit")
-    .eq("company_id", companyId);
+  const recs = [];
 
-  let revenue = 0;
-  let expenses = 0;
+  if (expenses > revenue) recs.push("Reduce operational expenses");
+  if (cashflow < 0) recs.push("Improve cashflow management");
+  if (revenue < 1000000) recs.push("Increase revenue streams");
 
-  lines.forEach(l => {
-    revenue += Number(l.credit || 0);
-    expenses += Number(l.debit || 0);
-  });
-
-  const cashflow = revenue - expenses;
-
-  const health = calculateFinancialHealth({
-    revenue,
-    expenses,
-    cashflow
-  });
-
-  const risk = calculateBusinessRisk({
-    revenue,
-    expenses,
-    cashflow
-  });
-
-  const recommendations = generateRecommendations({
-    revenue,
-    expenses,
-    cashflow
-  });
-
-  const prediction = predictProfitSimple(revenue, expenses);
-
-  return {
-    revenue,
-    expenses,
-    cashflow,
-    health,
-    risk,
-    recommendations,
-    prediction
-  };
+  return recs;
 }
 
 //////////////////////////////////////////////////////
-// 🟣 8. SIMPLE PROFIT PREDICTION WRAPPER
+// 4. PROFIT FORECAST (TREND BASED)
 //////////////////////////////////////////////////////
 
 function predictProfitSimple(revenue, expenses) {
 
   const profit = revenue - expenses;
 
-  const trend = profit > 0 ? "GROWING" : "DECLINING";
-
   return {
     currentProfit: profit,
-    trend,
+    trend: profit > 0 ? "GROWING" : "DECLINING",
     nextEstimate: profit * 1.1
+  };
+}
+
+//////////////////////////////////////////////////////
+// 5. EXPENSE ANOMALY DETECTION
+//////////////////////////////////////////////////////
+
+function detectExpenseAnomalies(transactions) {
+
+  if (!transactions || transactions.length === 0) return [];
+
+  const avg =
+    transactions.reduce((sum, t) => sum + t.amount, 0) / transactions.length;
+
+  return transactions
+    .filter(t => t.amount > avg * 2)
+    .map(t => ({
+      type: "HIGH_EXPENSE",
+      message: `Unusual expense detected: ${t.amount}`
+    }));
+}
+
+//////////////////////////////////////////////////////
+// 6. MAIN CFO REPORT ENGINE (FINAL ENTRY POINT)
+//////////////////////////////////////////////////////
+
+async function generateAICFODashboard(companyId) {
+
+  const { data: lines, error } = await sb
+    .from("journal_lines")
+    .select(`
+      debit,
+      credit,
+      chart_of_accounts(account_type)
+    `)
+    .eq("company_id", companyId);
+
+  if (error) {
+    console.log(error.message);
+    return null;
+  }
+
+  let revenue = 0;
+  let expenses = 0;
+
+  lines.forEach(l => {
+
+    const type = l.chart_of_accounts?.account_type;
+
+    if (type === "Revenue") {
+      revenue += Number(l.credit || 0);
+    }
+
+    if (type === "Expense") {
+      expenses += Number(l.debit || 0);
+    }
+  });
+
+  const cashflow = revenue - expenses;
+
+  return {
+    revenue,
+    expenses,
+    cashflow,
+
+    health: calculateFinancialHealth({ revenue, expenses, cashflow }),
+    risk: calculateBusinessRisk({ revenue, expenses, cashflow }),
+    recommendations: generateRecommendations({ revenue, expenses, cashflow }),
+    prediction: predictProfitSimple(revenue, expenses)
   };
 }
