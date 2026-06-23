@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Settings | e-Gopaper ERP</title>
+
+<link rel="stylesheet" href="dashboard.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+```
+<aside class="sidebar">
+
+    <h2>e-Gopaper ERP</h2>
+
+    <ul>
+
+        <li onclick="location.href='dashboard.html'">Dashboard</li>
+        <li onclick="location.href='chart-of-accounts.html'">Chart of Accounts</li>
+        <li onclick="location.href='journal-entry.html'">Journal Entry</li>
+        <li onclick="location.href='journal.html'">Journal Register</li>
+        <li onclick="location.href='ledger.html'">General Ledger</li>
+        <li onclick="location.href='trial-balance.html'">Trial Balance</li>
+        <li onclick="location.href='income-statement.html'">Income Statement</li>
+        <li onclick="location.href='balance-sheet.html'">Balance Sheet</li>
+        <li onclick="location.href='cashflow.html'">Cash Flow</li>
+        <li onclick="location.href='classification-dashboard.html'">Tax Classification</li>
+        <li onclick="location.href='ai-cfo-dashboard.html'">AI CFO Insights</li>
+
+        <li class="active">
+            Settings
+        </li>
+
+        <li id="logoutBtn">
+            Logout
+        </li>
+
+    </ul>
+
+</aside>
+
+<main class="main">
+
+    <section class="card">
+
+        <h1>System Settings</h1>
+
+        <p>
+            Configure company and ERP preferences.
+        </p>
+
+    </section>
+
+    <section class="card">
+
+        <h2>Company Settings</h2>
+
+        <p><b>Company Name:</b> <span id="companyName">Loading...</span></p>
+
+        <p><b>TIN:</b> <span id="companyTin">Loading...</span></p>
+
+        <p><b>Email:</b> <span id="companyEmail">Loading...</span></p>
+
+        <p><b>Phone:</b> <span id="companyPhone">Loading...</span></p>
+
+        <p><b>Currency:</b> <span id="companyCurrency">Loading...</span></p>
+
+    </section>
+
+    <section class="card">
+
+        <h2>System Information</h2>
+
+        <p>Version: e-Gopaper ERP V1</p>
+
+        <p>Environment: Production</p>
+
+        <p>Database: Supabase</p>
+
+    </section>
+
+</main>
+```
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase-client.js"></script>
+
+</body>
+
+</html>
