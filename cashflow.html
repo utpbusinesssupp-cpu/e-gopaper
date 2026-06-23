@@ -3,8 +3,7 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Cash Flow Statement | e-Gopaper ERP</title>
 
@@ -16,105 +15,209 @@ content="width=device-width, initial-scale=1.0">
 
 <div class="container">
 
-<aside class="sidebar">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
 
-<h2>e-Gopaper</h2>
+        <h2>e-Gopaper</h2>
 
-<ul>
+        <ul>
 
-<li onclick="location.href='dashboard.html'">
-Dashboard
-</li>
+            <li onclick="location.href='dashboard.html'">
+                Dashboard
+            </li>
 
-<li onclick="location.href='ledger.html'">
-General Ledger
-</li>
+            <li onclick="location.href='chart-of-accounts.html'">
+                Chart of Accounts
+            </li>
 
-<li onclick="location.href='trial-balance.html'">
-Trial Balance
-</li>
+            <li onclick="location.href='journal.html'">
+                Journal
+            </li>
 
-<li onclick="location.href='income-statement.html'">
-Income Statement
-</li>
+            <li onclick="location.href='ledger.html'">
+                General Ledger
+            </li>
 
-<li onclick="location.href='balance-sheet.html'">
-Balance Sheet
-</li>
+            <li onclick="location.href='trial-balance.html'">
+                Trial Balance
+            </li>
 
-<li class="active">
-Cash Flow
-</li>
+            <li onclick="location.href='income-statement.html'">
+                Income Statement
+            </li>
 
-<li id="logoutBtn">
-Logout
-</li>
+            <li onclick="location.href='balance-sheet.html'">
+                Balance Sheet
+            </li>
 
-</ul>
+            <li class="active">
+                Cash Flow
+            </li>
 
-</aside>
+            <li id="logoutBtn">
+                Logout
+            </li>
+
+        </ul>
+
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- PAGE HEADER -->
+        <section class="card">
+
+            <h1>Cash Flow Statement</h1>
+
+            <p>
+                Cash movement analysis for the selected period.
+            </p>
+
+        </section>
 
 
-<main class="main">
+        <!-- FILTERS -->
+        <section class="card">
 
-<section class="card">
+            <div class="filters">
 
-<h1>Cash Flow Statement</h1>
+                <div>
 
-<p>
-Operating cash movements
-</p>
+                    <label>From</label>
 
-</section>
+                    <input
+                        type="date"
+                        id="fromDate"
+                    >
+
+                </div>
+
+                <div>
+
+                    <label>To</label>
+
+                    <input
+                        type="date"
+                        id="toDate"
+                    >
+
+                </div>
+
+                <div>
+
+                    <button id="refreshCashFlowBtn">
+                        Refresh Report
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
 
 
-<section class="summary">
+        <!-- SUMMARY CARDS -->
+        <section class="summary">
 
-<div class="card">
+            <div class="card">
 
-<h2>Cash Inflows</h2>
+                <h2>Cash Inflows</h2>
 
-<h1 id="cashIn">
+                <h1 id="cashIn">
+                    0
+                </h1>
 
-0
+            </div>
 
-</h1>
+
+            <div class="card">
+
+                <h2>Cash Outflows</h2>
+
+                <h1 id="cashOut">
+                    0
+                </h1>
+
+            </div>
+
+
+            <div class="card">
+
+                <h2>Net Cash Flow</h2>
+
+                <h1 id="netCashFlow">
+                    0
+                </h1>
+
+            </div>
+
+        </section>
+
+
+        <!-- DETAILS -->
+        <section class="card">
+
+            <h2>Cash Flow Details</h2>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Category</th>
+
+                        <th>Amount</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="cashFlowTable">
+
+                    <tr>
+
+                        <td colspan="2">
+
+                            Loading...
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+
+        <!-- ANALYSIS -->
+        <section class="card">
+
+            <h2>Cash Flow Analysis</h2>
+
+            <div id="cashFlowAnalysis">
+
+                Loading...
+
+            </div>
+
+        </section>
+
+    </main>
 
 </div>
 
 
-<div class="card">
-
-<h2>Cash Outflows</h2>
-
-<h1 id="cashOut">
-
-0
-
-</h1>
-
-</div>
-
-
-<div class="card">
-
-<h2>Net Cash Flow</h2>
-
-<h1 id="netCashFlow">
-
-0
-
-</h1>
-
-</div>
-
-</section>
-
-</main>
-
-</div>
-
+<!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- CENTRAL CONFIG -->
+<script src="supabase.js"></script>
+
+<!-- PAGE SCRIPT -->
 <script src="cashflow.js"></script>
 
 </body>
