@@ -3,105 +3,184 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Income Statement | e-Gopaper ERP</title>
 
 <link rel="stylesheet" href="dashboard.css">
 
 </head>
+
 <body>
 
 <div class="container">
 
-<aside class="sidebar">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
 
-<h2>e-Gopaper</h2>
+        <h2>e-Gopaper ERP</h2>
 
-<ul>
+        <ul>
 
-<li onclick="window.location.href='dashboard.html'">
-Dashboard
-</li>
+            <li onclick="location.href='dashboard.html'">
+                Dashboard
+            </li>
 
-<li onclick="window.location.href='ledger.html'">
-General Ledger
-</li>
+            <li onclick="location.href='chart-of-accounts.html'">
+                Chart of Accounts
+            </li>
 
-<li onclick="window.location.href='trial-balance.html'">
-Trial Balance
-</li>
+            <li onclick="location.href='journal-entry.html'">
+                Journal Entry
+            </li>
 
-<li class="active">
-Income Statement
-</li>
+            <li onclick="location.href='journal.html'">
+                Journal Register
+            </li>
 
-<li id="logoutBtn">
-Logout
-</li>
+            <li onclick="location.href='ledger.html'">
+                General Ledger
+            </li>
 
-</ul>
+            <li onclick="location.href='trial-balance.html'">
+                Trial Balance
+            </li>
 
-</aside>
+            <li class="active">
+                Income Statement
+            </li>
 
+            <li onclick="location.href='balance-sheet.html'">
+                Balance Sheet
+            </li>
 
-<main class="main">
+            <li onclick="location.href='cashflow.html'">
+                Cash Flow Statement
+            </li>
 
-<section class="card">
+            <li onclick="location.href='classification-dashboard.html'">
+                Tax Classification
+            </li>
 
-<h1>Income Statement</h1>
+            <li onclick="location.href='ai-cfo-dashboard.html'">
+                AI CFO Insights
+            </li>
 
-<p>
-Profit & Loss Report
-</p>
+            <li onclick="location.href='settings.html'">
+                Settings
+            </li>
 
-</section>
+            <li id="logoutBtn">
+                Logout
+            </li>
 
+        </ul>
 
-<section class="card">
-
-<h2>Revenue</h2>
-
-<p id="totalRevenue">
-
-0
-
-</p>
-
-</section>
-
-
-<section class="card">
-
-<h2>Expenses</h2>
-
-<p id="totalExpenses">
-
-0
-
-</p>
-
-</section>
+    </aside>
 
 
-<section class="card">
+    <!-- MAIN CONTENT -->
+    <main class="main">
 
-<h2>Net Profit</h2>
+        <!-- PAGE HEADER -->
+        <section class="card">
 
-<h1 id="netProfit">
+            <h1>Income Statement</h1>
 
-0
+            <p>
+                Profit & Loss Report for the selected accounting period.
+            </p>
 
-</h1>
+        </section>
 
-</section>
 
-</main>
+        <!-- KPI SUMMARY -->
+        <section class="summary">
+
+            <div class="card">
+                <h3>Total Revenue</h3>
+                <h1 id="totalRevenue">
+                    0 RWF
+                </h1>
+            </div>
+
+            <div class="card">
+                <h3>Total Expenses</h3>
+                <h1 id="totalExpenses">
+                    0 RWF
+                </h1>
+            </div>
+
+            <div class="card">
+                <h3>Net Profit</h3>
+                <h1 id="netProfit">
+                    0 RWF
+                </h1>
+            </div>
+
+        </section>
+
+
+        <!-- DETAILED P&L -->
+        <section class="card">
+
+            <h2>Profit & Loss Breakdown</h2>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Description</th>
+                        <th>Amount (RWF)</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>Total Revenue</td>
+                        <td id="tblRevenue">0</td>
+                    </tr>
+
+                    <tr>
+                        <td>Total Expenses</td>
+                        <td id="tblExpenses">0</td>
+                    </tr>
+
+                    <tr style="font-weight:bold;background:#f3f4f6">
+                        <td>Net Profit / (Loss)</td>
+                        <td id="tblProfit">0</td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+
+        <!-- NOTES -->
+        <section class="card">
+
+            <h2>Analysis</h2>
+
+            <div id="profitAnalysis">
+
+                Waiting for financial data...
+
+            </div>
+
+        </section>
+
+    </main>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase-client.js"></script>
 
 <script src="income-statement.js"></script>
 
