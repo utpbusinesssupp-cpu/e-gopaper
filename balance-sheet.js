@@ -5,13 +5,13 @@
 const sb = window.sb;
 
 //////////////////////////////////////////////////////
-// BALANCE SHEET ENGINE (V1 FINAL)
+// BALANCE SHEET ENGINE (V2 - PRODUCTION READY)
 //////////////////////////////////////////////////////
 
 async function loadBalanceSheet(companyId) {
 
   //////////////////////////////////////////////////////
-  // FETCH JOURNAL LINES (SAFE + MULTI-TENANT)
+  // FETCH JOURNAL LINES
   //////////////////////////////////////////////////////
 
   const { data, error } = await sb
@@ -37,7 +37,22 @@ async function loadBalanceSheet(companyId) {
   let equity = 0;
 
   //////////////////////////////////////////////////////
-  // CALCULATION ENGINE
+  // INVENTORY (STEP C INTEGRATION HOOK)
+  //////////////////////////////////////////////////////
+
+  let inventoryValue = 0;
+
+  try {
+    if (window.calculateStockValuation) {
+      inventoryValue = await window.calculateStockValuation(companyId);
+    }
+  } catch (e) {
+    console.log("Inventory valuation error:", e.message);
+    inventoryValue = 0;
+  }
+
+  //////////////////////////////////////////////////////
+  // CORE CALCULATION ENGINE
   //////////////////////////////////////////////////////
 
   (data || []).forEach(l => {
@@ -63,50 +78,71 @@ async function loadBalanceSheet(companyId) {
   });
 
   //////////////////////////////////////////////////////
-  // FINAL RESULT
+  // ADD INVENTORY TO ASSETS (CRITICAL STEP C)
+  //////////////////////////////////////////////////////
+
+  assets += Number(inventoryValue || 0);
+
+  //////////////////////////////////////////////////////
+  // FINAL COMPUTATION
   //////////////////////////////////////////////////////
 
   const totalLiabilitiesEquity = liabilities + equity;
   const balanceCheck = assets - totalLiabilitiesEquity;
 
   //////////////////////////////////////////////////////
-  // OUTPUT (FOR UI)
+  // STATUS ENGINE
   //////////////////////////////////////////////////////
 
-  console.log("📊 BALANCE SHEET");
+  let status = "BALANCED ✔";
+
+  if (balanceCheck !== 0) {
+    status = "NOT BALANCED ❌";
+  }
+
+  //////////////////////////////////////////////////////
+  // OUTPUT LOGS (DEBUG + AUDIT)
+  //////////////////////////////////////////////////////
+
+  console.log("📊 BALANCE SHEET V2");
   console.log({
     assets,
     liabilities,
     equity,
+    inventoryValue,
     totalLiabilitiesEquity,
     balanceCheck,
-    status: balanceCheck === 0 ? "BALANCED ✔" : "NOT BALANCED ❌"
+    status
   });
 
   //////////////////////////////////////////////////////
-  // OPTIONAL UI UPDATE (IF YOU HAVE ELEMENTS)
+  // UI UPDATE (SAFE DOM CHECKS)
   //////////////////////////////////////////////////////
 
-  if (document.getElementById("assets")) {
-    document.getElementById("assets").innerText = assets.toLocaleString();
-  }
+  const set = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = value.toLocaleString();
+  };
 
-  if (document.getElementById("liabilities")) {
-    document.getElementById("liabilities").innerText = liabilities.toLocaleString();
-  }
+  set("assets", assets);
+  set("liabilities", liabilities);
+  set("equity", equity);
 
-  if (document.getElementById("equity")) {
-    document.getElementById("equity").innerText = equity.toLocaleString();
-  }
+  const statusEl = document.getElementById("balanceStatus");
+  if (statusEl) statusEl.innerText = status;
 
-  if (document.getElementById("balanceStatus")) {
-    document.getElementById("balanceStatus").innerText =
-      balanceCheck === 0 ? "BALANCED ✔" : "NOT BALANCED ❌";
+  //////////////////////////////////////////////////////
+  // OPTIONAL EXTRA UI (IF EXISTS)
+  //////////////////////////////////////////////////////
+
+  const totalEl = document.getElementById("liabilitiesEquity");
+  if (totalEl) {
+    totalEl.innerText = totalLiabilitiesEquity.toLocaleString();
   }
 }
 
 //////////////////////////////////////////////////////
-// AUTO RUN (SAFE)
+// AUTO RUN (PRO SAFE MULTI-TENANT)
 //////////////////////////////////////////////////////
 
 (async () => {
