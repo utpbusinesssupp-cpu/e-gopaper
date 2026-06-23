@@ -1,13 +1,22 @@
+//////////////////////////////////////////////////////
+// COGS ENGINE V1 (PRODUCTION ERP CORE)
+//////////////////////////////////////////////////////
+
 const sb = window.sb;
 
 //////////////////////////////////////////////////////
-// COGS ENGINE (HYBRID: STANDARD + FIFO READY)
+// MAIN FUNCTION: PROCESS COGS
 //////////////////////////////////////////////////////
 
 async function processCOGS(itemId, quantity, reference, companyId) {
 
+  if (!itemId || !quantity || quantity <= 0) {
+    console.log("Invalid COGS input");
+    return 0;
+  }
+
   //////////////////////////////////////////////////////
-  // 1. GET ITEM
+  // FETCH ITEM
   //////////////////////////////////////////////////////
 
   const { data: item, error } = await sb
@@ -22,56 +31,48 @@ async function processCOGS(itemId, quantity, reference, companyId) {
   }
 
   //////////////////////////////////////////////////////
-  // 2. STANDARD COST (YOUR CURRENT SYSTEM)
+  // CALCULATE COST
   //////////////////////////////////////////////////////
 
   const unitCost = Number(item.cost_price || 0);
   const totalCost = unitCost * quantity;
 
   //////////////////////////////////////////////////////
-  // 3. SAVE BASIC COGS ENTRY (COMPATIBILITY LAYER)
+  // SAVE COGS ENTRY
   //////////////////////////////////////////////////////
 
-  await sb.from("cogs_entries").insert([{
-    company_id: companyId,
-    item_id: itemId,
-    quantity,
-    unit_cost: unitCost,
-    total_cost: totalCost,
-    reference
-  }]);
+  const { error: insertError } = await sb
+    .from("cogs_entries")
+    .insert([{
+      company_id: companyId,
+      item_id: itemId,
+      quantity: quantity,
+      unit_cost: unitCost,
+      total_cost: totalCost,
+      reference: reference,
+      created_at: new Date()
+    }]);
 
-  //////////////////////////////////////////////////////
-  // 4. UPDATE INVENTORY STOCK
-  //////////////////////////////////////////////////////
+  if (insertError) {
+    console.log("COGS insert error:", insertError.message);
+    return 0;
+  }
 
-  const newQty = Number(item.stock_qty || 0) - quantity;
+  console.log("✔ COGS recorded:", totalCost);
 
-  await sb
-    .from("inventory_items")
-    .update({
-      stock_qty: newQty
-    })
-    .eq("id", itemId);
+  return totalCost;
+}
 
-  //////////////////////////////////////////////////////
-  // 5. FIFO HOOK (STEP C READY)
-  //////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+// AUTO COGS TRIGGER (OPTIONAL HOOK)
+//////////////////////////////////////////////////////
 
-  await sb.from("inventory_movements").insert([{
-    company_id: companyId,
-    item_id: itemId,
-    type: "OUT",
-    quantity,
-    unit_cost: unitCost,
-    reference
-  }]);
+async function autoCOGSFromSale(itemId, qty, reference, companyId) {
 
-  console.log("COGS processed:", totalCost);
+  const cost = await processCOGS(itemId, qty, reference, companyId);
 
   return {
-    quantity,
-    unitCost,
-    totalCost
+    success: true,
+    cogs: cost
   };
 }
