@@ -5,7 +5,7 @@
 const sb = window.sb;
 
 //////////////////////////////////////////////////////
-// MODE
+// MODE STATE
 //////////////////////////////////////////////////////
 
 let mode = "login";
@@ -15,62 +15,63 @@ let mode = "login";
 //////////////////////////////////////////////////////
 
 document.addEventListener("DOMContentLoaded", () => {
-
   checkSession();
-
 });
 
 //////////////////////////////////////////////////////
-// CHECK SESSION
+// CHECK SESSION (SAFE + PRODUCTION READY)
 //////////////////////////////////////////////////////
 
 async function checkSession() {
+  try {
+    const { data: { session }, error } = await sb.auth.getSession();
 
-  const { data } = await sb.auth.getSession();
+    if (error || !session?.user) return;
 
-  if (!data.session) return;
+    const user = session.user;
 
-  const user = data.session.user;
+    const { data: company, error: companyError } = await sb
+      .from("companies")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-  const { data: company } = await sb
-    .from("companies")
-    .select("*")
-    .eq("user_id", user.id)
-    .maybeSingle();
+    if (companyError) {
+      console.log(companyError.message);
+      return;
+    }
 
-  if (!company) {
-    window.location.href = "onboarding.html";
-    return;
+    if (!company) {
+      window.location.href = "onboarding.html";
+      return;
+    }
+
+    window.location.href = "dashboard.html";
+
+  } catch (err) {
+    console.log("Session error:", err.message);
   }
-
-  window.location.href = "dashboard.html";
 }
 
 //////////////////////////////////////////////////////
-// TOGGLE MODE
+// TOGGLE LOGIN / SIGNUP MODE
 //////////////////////////////////////////////////////
 
 function toggleMode() {
 
-  mode = mode === "login"
-    ? "signup"
-    : "login";
+  mode = mode === "login" ? "signup" : "login";
 
   document.getElementById("title").innerText =
-    mode === "login"
-      ? "Login"
-      : "Create Account";
+    mode === "login" ? "Login" : "Create Account";
 
   document.getElementById("submitBtn").innerText =
-    mode === "login"
-      ? "Login"
-      : "Create Account";
+    mode === "login" ? "Login" : "Create Account";
 
   showMessage("");
 }
 
 //////////////////////////////////////////////////////
-// MESSAGE
+// MESSAGE HELPER
 //////////////////////////////////////////////////////
 
 function showMessage(message, success = false) {
@@ -79,28 +80,20 @@ function showMessage(message, success = false) {
 
   msg.innerText = message;
 
-  msg.style.color =
-    success
-      ? "#16a34a"
-      : "#dc2626";
+  msg.style.color = success ? "#16a34a" : "#dc2626";
 }
 
 //////////////////////////////////////////////////////
-// AUTH
+// AUTH HANDLER (LOGIN + SIGNUP)
 //////////////////////////////////////////////////////
 
 async function handleAuth() {
 
-  const email =
-    document.getElementById("email").value.trim();
-
-  const password =
-    document.getElementById("password").value;
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
 
   if (!email || !password) {
-
-    showMessage("Email and password required");
-
+    showMessage("Email and password are required");
     return;
   }
 
@@ -110,44 +103,41 @@ async function handleAuth() {
 
   if (mode === "login") {
 
-    const { data, error } =
-      await sb.auth.signInWithPassword({
+    try {
+
+      const { data, error } = await sb.auth.signInWithPassword({
         email,
         password
       });
 
-    if (error) {
+      if (error) {
+        showMessage(error.message);
+        return;
+      }
 
-      showMessage(error.message);
+      showMessage("Login successful ✔", true);
 
-      return;
+      const user = data.user;
+
+      const { data: company } = await sb
+        .from("companies")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      setTimeout(() => {
+
+        if (!company) {
+          window.location.href = "onboarding.html";
+        } else {
+          window.location.href = "dashboard.html";
+        }
+
+      }, 400);
+
+    } catch (err) {
+      showMessage(err.message);
     }
-
-    showMessage(
-      "Login successful...",
-      true
-    );
-
-    const user = data.user;
-
-    const { data: company } = await sb
-      .from("companies")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    setTimeout(() => {
-
-      if (!company) {
-        window.location.href =
-          "onboarding.html";
-      }
-      else {
-        window.location.href =
-          "dashboard.html";
-      }
-
-    }, 500);
 
     return;
   }
@@ -156,62 +146,52 @@ async function handleAuth() {
   // SIGNUP
   //////////////////////////////////////////////////////
 
-  const { error } =
-    await sb.auth.signUp({
+  try {
+
+    const { error } = await sb.auth.signUp({
       email,
       password
     });
 
-  if (error) {
+    if (error) {
+      showMessage(error.message);
+      return;
+    }
 
-    showMessage(error.message);
+    showMessage("Check email to confirm account ✔", true);
 
-    return;
+  } catch (err) {
+    showMessage(err.message);
   }
-
-  showMessage(
-    "Check your email to verify account ✔",
-    true
-  );
 }
 
 //////////////////////////////////////////////////////
-// FORGOT PASSWORD
+// FORGOT PASSWORD (MULTI-DOMAIN SAFE FIX)
 //////////////////////////////////////////////////////
 
 async function forgotPassword() {
 
-  const email =
-    document.getElementById("email").value.trim();
+  const email = document.getElementById("email").value.trim();
 
   if (!email) {
-
-    showMessage(
-      "Enter your email first"
-    );
-
+    showMessage("Enter your email first");
     return;
   }
 
-  const { error } =
-    await sb.auth.resetPasswordForEmail(
-      email,
-      {
-        redirectTo:
-          window.location.origin +
-          "/reset-password.html"
-      }
-    );
+  try {
 
-  if (error) {
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + "/reset-password.html"
+    });
 
-    showMessage(error.message);
+    if (error) {
+      showMessage(error.message);
+      return;
+    }
 
-    return;
+    showMessage("Password reset email sent ✔ Check inbox", true);
+
+  } catch (err) {
+    showMessage(err.message);
   }
-
-  showMessage(
-    "Password reset email sent ✔",
-    true
-  );
 }
