@@ -1,32 +1,31 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>e-Gopaper ERP Dashboard</title>
+<title>Dashboard | e-Gopaper ERP</title>
 
 <link rel="stylesheet" href="dashboard.css">
 
 <style>
-/* =========================
-   INSIGHTS UI (AI LAYER)
-========================= */
 
-.insight-box {
-    margin-top: 20px;
+.insight-box{
+    margin-top:20px;
 }
 
-.insight-item {
-    background: #ffffff;
-    padding: 12px;
-    margin: 8px 0;
-    border-left: 5px solid #2563eb;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    font-size: 14px;
+.insight-item{
+    background:#ffffff;
+    padding:12px;
+    margin:8px 0;
+    border-left:5px solid #2563eb;
+    border-radius:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
 }
+
 </style>
 
 </head>
@@ -35,129 +34,283 @@
 
 <div class="container">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
+```
+<!-- SIDEBAR -->
+<aside class="sidebar">
 
-        <h2>e-Gopaper</h2>
+    <h2>e-Gopaper ERP</h2>
 
-        <ul>
-            <li>Dashboard</li>
-            <li>Chart of Accounts</li>
-            <li>Transactions</li>
-            <li>General Ledger</li>
-            <li>Reports</li>
-            <li>Settings</li>
-            <li id="logoutBtn">Logout</li>
-        </ul>
+    <ul>
 
-    </aside>
+        <li class="active"
+            onclick="location.href='dashboard.html'">
+            Dashboard
+        </li>
 
-    <!-- MAIN CONTENT -->
-    <main class="main">
+        <li onclick="location.href='chart-of-accounts.html'">
+            Chart of Accounts
+        </li>
 
-        <!-- WELCOME -->
-        <section class="card">
+        <li onclick="location.href='journal-entry.html'">
+            Journal Entry
+        </li>
 
-            <h1 id="welcomeTitle">Welcome</h1>
+        <li onclick="location.href='journal.html'">
+            Journal Register
+        </li>
 
-            <p>
-                Manage accounting, payroll, taxes and reports.
+        <li onclick="location.href='ledger.html'">
+            General Ledger
+        </li>
+
+        <li onclick="location.href='trial-balance.html'">
+            Trial Balance
+        </li>
+
+        <li onclick="location.href='income-statement.html'">
+            Income Statement
+        </li>
+
+        <li onclick="location.href='balance-sheet.html'">
+            Balance Sheet
+        </li>
+
+        <li onclick="location.href='cashflow.html'">
+            Cash Flow Statement
+        </li>
+
+        <li onclick="location.href='classification-dashboard.html'">
+            Tax Classification
+        </li>
+
+        <li onclick="location.href='ai-cfo-dashboard.html'">
+            AI CFO Insights
+        </li>
+
+        <li onclick="location.href='settings.html'">
+            Settings
+        </li>
+
+        <li id="logoutBtn">
+            Logout
+        </li>
+
+    </ul>
+
+</aside>
+
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+    <!-- WELCOME -->
+    <section class="card">
+
+        <h1 id="welcomeTitle">
+            Welcome
+        </h1>
+
+        <p>
+            Manage accounting, tax, reporting and AI financial intelligence.
+        </p>
+
+    </section>
+
+
+    <!-- COMPANY INFO -->
+    <section class="card">
+
+        <h2>Company Information</h2>
+
+        <p><b>Name:</b> <span id="company_name">Loading...</span></p>
+
+        <p><b>TIN:</b> <span id="tin">Loading...</span></p>
+
+        <p><b>Phone:</b> <span id="phone">Loading...</span></p>
+
+        <p><b>Email:</b> <span id="email">Loading...</span></p>
+
+        <p><b>Currency:</b> <span id="currency">RWF</span></p>
+
+    </section>
+
+
+    <!-- FINANCIAL OVERVIEW -->
+    <section class="summary">
+
+        <div class="card">
+            <h3>Cash Balance</h3>
+            <p id="cashBalance">0 RWF</p>
+        </div>
+
+        <div class="card">
+            <h3>Revenue</h3>
+            <p id="revenue">0 RWF</p>
+        </div>
+
+        <div class="card">
+            <h3>Expenses</h3>
+            <p id="expenses">0 RWF</p>
+        </div>
+
+        <div class="card">
+            <h3>Net Profit</h3>
+            <p id="netProfit">0 RWF</p>
+        </div>
+
+    </section>
+
+
+    <!-- FINANCIAL POSITION -->
+    <section class="summary">
+
+        <div class="card">
+            <h3>Assets</h3>
+            <p id="assets">0 RWF</p>
+        </div>
+
+        <div class="card">
+            <h3>Liabilities</h3>
+            <p id="liabilities">0 RWF</p>
+        </div>
+
+        <div class="card">
+            <h3>Equity</h3>
+            <p id="equity">0 RWF</p>
+        </div>
+
+        <div class="card">
+            <h3>Health Score</h3>
+            <p id="healthScore">0%</p>
+        </div>
+
+    </section>
+
+
+    <!-- ACCOUNTING STATUS -->
+    <section class="summary">
+
+        <div class="card">
+            <h3>Accounts</h3>
+            <p id="accountsCount">0</p>
+        </div>
+
+        <div class="card">
+            <h3>Journal Entries</h3>
+            <p id="journalCount">0</p>
+        </div>
+
+        <div class="card">
+            <h3>Ledger Lines</h3>
+            <p id="ledgerCount">0</p>
+        </div>
+
+        <div class="card">
+            <h3>Trial Balance</h3>
+            <p id="trialBalanceStatus">
+                Pending
             </p>
+        </div>
 
-        </section>
+    </section>
 
-        <!-- COMPANY INFO -->
-        <section class="card">
 
-            <h2>Company Information</h2>
+    <!-- TAX CENTER -->
+    <section class="summary">
 
-            <p><b>Name:</b> <span id="company_name">Loading...</span></p>
-            <p><b>TIN:</b> <span id="tin">Loading...</span></p>
-            <p><b>Phone:</b> <span id="phone">Loading...</span></p>
-            <p><b>Email:</b> <span id="email">Loading...</span></p>
-            <p><b>Currency:</b> <span id="currency">Loading...</span></p>
+        <div class="card">
+            <h3>EBM</h3>
+            <p id="ebmCount">0</p>
+        </div>
 
-        </section>
+        <div class="card">
+            <h3>PAYE</h3>
+            <p id="payeAmount">0 RWF</p>
+        </div>
 
-        <!-- SUMMARY -->
-        <section class="summary">
+        <div class="card">
+            <h3>RSSB</h3>
+            <p id="rssbAmount">0 RWF</p>
+        </div>
 
-            <div class="card">
-                <h3>Cash Balance</h3>
-                <p id="cashBalance">0 RWF</p>
-            </div>
+        <div class="card">
+            <h3>WHT</h3>
+            <p id="withholdingAmount">0 RWF</p>
+        </div>
 
-            <div class="card">
-                <h3>Revenue</h3>
-                <p id="revenue">0 RWF</p>
-            </div>
+    </section>
 
-            <div class="card">
-                <h3>Expenses</h3>
-                <p id="expenses">0 RWF</p>
-            </div>
 
-            <div class="card">
-                <h3>Net Profit</h3>
-                <p id="netProfit">0 RWF</p>
-            </div>
+    <!-- AI CFO INSIGHTS -->
+    <section class="card insight-box">
 
-        </section>
+        <h2>AI CFO Insights</h2>
 
-        <!-- RECENT ACTIVITIES -->
-        <section class="card">
+        <div id="insights">
 
-            <h2>Recent Activities</h2>
+            Loading insights...
 
-            <div id="recentActivities">
-                No transactions yet.
-            </div>
+        </div>
 
-        </section>
+    </section>
 
-        <!-- 🟢 BUSINESS INSIGHTS (AI LAYER READY) -->
-        <section class="card insight-box">
 
-            <h2>Business Insights</h2>
+    <!-- RECENT ACTIVITIES -->
+    <section class="card">
 
-            <div id="insights">
-                Loading insights...
-            </div>
+        <h2>Recent Activities</h2>
 
-        </section>
+        <div id="recentActivities">
 
-        <!-- QUICK ACTIONS -->
-        <section class="card">
+            No transactions yet.
 
-            <h2>Quick Actions</h2>
+        </div>
 
-            <button onclick="location.href='journal.html'">
-                Add Transaction
-            </button>
+    </section>
 
-            <button>
-                Create Invoice
-            </button>
 
-            <button>
-                Run Payroll
-            </button>
+    <!-- QUICK ACTIONS -->
+    <section class="card">
 
-            <button onclick="location.href='reports.html'">
-                View Reports
-            </button>
+        <h2>Quick Actions</h2>
 
-        </section>
+        <button onclick="location.href='journal-entry.html'">
+            + Journal Entry
+        </button>
 
-    </main>
+        <button onclick="location.href='ledger.html'">
+            View Ledger
+        </button>
+
+        <button onclick="location.href='trial-balance.html'">
+            Trial Balance
+        </button>
+
+        <button onclick="location.href='income-statement.html'">
+            Financial Reports
+        </button>
+
+        <button onclick="location.href='classification-dashboard.html'">
+            Tax Center
+        </button>
+
+        <button onclick="location.href='ai-cfo-dashboard.html'">
+            AI CFO
+        </button>
+
+    </section>
+
+</main>
+```
 
 </div>
 
-<!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- DASHBOARD LOGIC -->
+<script src="supabase-client.js"></script>
+
 <script src="dashboard.js"></script>
 
 </body>
+
 </html>
