@@ -3,8 +3,7 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Balance Sheet | e-Gopaper ERP</title>
 
@@ -16,115 +15,109 @@ content="width=device-width, initial-scale=1.0">
 
 <div class="container">
 
-<aside class="sidebar">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
 
-<h2>e-Gopaper</h2>
+        <h2>e-Gopaper</h2>
 
-<ul>
+        <ul>
 
-<li onclick="location.href='dashboard.html'">
-Dashboard
-</li>
+            <li onclick="location.href='dashboard.html'">
+                Dashboard
+            </li>
 
-<li onclick="location.href='ledger.html'">
-General Ledger
-</li>
+            <li onclick="location.href='ledger.html'">
+                General Ledger
+            </li>
 
-<li onclick="location.href='trial-balance.html'">
-Trial Balance
-</li>
+            <li onclick="location.href='trial-balance.html'">
+                Trial Balance
+            </li>
 
-<li onclick="location.href='income-statement.html'">
-Income Statement
-</li>
+            <li onclick="location.href='income-statement.html'">
+                Income Statement
+            </li>
 
-<li class="active">
-Balance Sheet
-</li>
+            <li class="active">
+                Balance Sheet
+            </li>
 
-<li id="logoutBtn">
-Logout
-</li>
+            <li id="logoutBtn">
+                Logout
+            </li>
 
-</ul>
+        </ul>
 
-</aside>
+    </aside>
 
+    <!-- MAIN CONTENT -->
+    <main class="main">
 
-<main class="main">
+        <section class="card">
 
-<section class="card">
+            <h1>Balance Sheet</h1>
 
-<h1>Balance Sheet</h1>
+            <p>
+                Assets = Liabilities + Equity
+            </p>
 
-<p>
-Assets = Liabilities + Equity
-</p>
+        </section>
 
-</section>
+        <section class="summary">
 
+            <div class="card">
 
-<section class="summary">
+                <h2>Assets</h2>
 
-<div class="card">
+                <h1 id="assets">
+                    0
+                </h1>
 
-<h2>Assets</h2>
+            </div>
 
-<h1 id="assets">
+            <div class="card">
 
-0
+                <h2>Liabilities</h2>
 
-</h1>
+                <h1 id="liabilities">
+                    0
+                </h1>
 
-</div>
+            </div>
 
+            <div class="card">
 
-<div class="card">
+                <h2>Equity</h2>
 
-<h2>Liabilities</h2>
+                <h1 id="equity">
+                    0
+                </h1>
 
-<h1 id="liabilities">
+            </div>
 
-0
+        </section>
 
-</h1>
+        <section class="card">
 
-</div>
+            <h2>Total Liabilities + Equity</h2>
 
+            <h1 id="liabilitiesEquity">
+                0
+            </h1>
 
-<div class="card">
+        </section>
 
-<h2>Equity</h2>
-
-<h1 id="equity">
-
-0
-
-</h1>
-
-</div>
-
-</section>
-
-
-<section class="card">
-
-<h2>Total Liabilities + Equity</h2>
-
-<h1 id="liabilitiesEquity">
-
-0
-
-</h1>
-
-</section>
-
-</main>
+    </main>
 
 </div>
 
+<!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<!-- GLOBAL CLIENT -->
+<script src="supabaseClient.js"></script>
+
+<!-- PAGE LOGIC -->
 <script src="balance-sheet.js"></script>
 
 </body>
