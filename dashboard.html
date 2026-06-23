@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
 
 <meta charset="UTF-8">
@@ -12,7 +10,6 @@
 <link rel="stylesheet" href="dashboard.css">
 
 <style>
-
 .insight-box{
     margin-top:20px;
 }
@@ -25,7 +22,6 @@
     border-radius:8px;
     box-shadow:0 2px 8px rgba(0,0,0,.05);
 }
-
 </style>
 
 </head>
@@ -34,7 +30,6 @@
 
 <div class="container">
 
-```
 <!-- SIDEBAR -->
 <aside class="sidebar">
 
@@ -42,275 +37,155 @@
 
     <ul>
 
-        <li class="active"
-            onclick="location.href='dashboard.html'">
-            Dashboard
-        </li>
+        <li class="active" onclick="location.href='dashboard.html'">Dashboard</li>
 
-        <li onclick="location.href='chart-of-accounts.html'">
-            Chart of Accounts
-        </li>
+        <li onclick="location.href='chart-of-accounts.html'">Chart of Accounts</li>
+        <li onclick="location.href='journal-entry.html'">Journal Entry</li>
+        <li onclick="location.href='journal.html'">Journal Register</li>
+        <li onclick="location.href='ledger.html'">General Ledger</li>
+        <li onclick="location.href='trial-balance.html'">Trial Balance</li>
+        <li onclick="location.href='income-statement.html'">Income Statement</li>
+        <li onclick="location.href='balance-sheet.html'">Balance Sheet</li>
+        <li onclick="location.href='cashflow.html'">Cash Flow Statement</li>
 
-        <li onclick="location.href='journal-entry.html'">
-            Journal Entry
-        </li>
+        <li onclick="location.href='classification-dashboard.html'">Tax Classification</li>
+        <li onclick="location.href='ai-cfo-dashboard.html'">AI CFO Insights</li>
+        <li onclick="location.href='settings.html'">Settings</li>
 
-        <li onclick="location.href='journal.html'">
-            Journal Register
-        </li>
-
-        <li onclick="location.href='ledger.html'">
-            General Ledger
-        </li>
-
-        <li onclick="location.href='trial-balance.html'">
-            Trial Balance
-        </li>
-
-        <li onclick="location.href='income-statement.html'">
-            Income Statement
-        </li>
-
-        <li onclick="location.href='balance-sheet.html'">
-            Balance Sheet
-        </li>
-
-        <li onclick="location.href='cashflow.html'">
-            Cash Flow Statement
-        </li>
-
-        <li onclick="location.href='classification-dashboard.html'">
-            Tax Classification
-        </li>
-
-        <li onclick="location.href='ai-cfo-dashboard.html'">
-            AI CFO Insights
-        </li>
-
-        <li onclick="location.href='settings.html'">
-            Settings
-        </li>
-
-        <li id="logoutBtn">
-            Logout
-        </li>
+        <li id="logoutBtn">Logout</li>
 
     </ul>
 
 </aside>
 
-
-<!-- MAIN CONTENT -->
+<!-- MAIN -->
 <main class="main">
 
-    <!-- WELCOME -->
-    <section class="card">
+<!-- WELCOME -->
+<section class="card">
 
-        <h1 id="welcomeTitle">
-            Welcome
-        </h1>
+    <h1>Welcome</h1>
 
-        <p>
-            Manage accounting, tax, reporting and AI financial intelligence.
-        </p>
+    <p>Manage accounting, tax, reporting, inventory and AI CFO intelligence.</p>
 
-    </section>
+</section>
 
+<!-- COMPANY INFO -->
+<section class="card">
 
-    <!-- COMPANY INFO -->
-    <section class="card">
+    <h2>Company Information</h2>
 
-        <h2>Company Information</h2>
+    <p><b>Name:</b> <span id="company_name">Loading...</span></p>
+    <p><b>TIN:</b> <span id="tin">Loading...</span></p>
+    <p><b>Phone:</b> <span id="phone">Loading...</span></p>
+    <p><b>Email:</b> <span id="email">Loading...</span></p>
+    <p><b>Currency:</b> <span id="currency">RWF</span></p>
 
-        <p><b>Name:</b> <span id="company_name">Loading...</span></p>
+</section>
 
-        <p><b>TIN:</b> <span id="tin">Loading...</span></p>
+<!-- FINANCIAL OVERVIEW -->
+<section class="summary">
 
-        <p><b>Phone:</b> <span id="phone">Loading...</span></p>
+    <div class="card">
+        <h3>Cash Balance</h3>
+        <p id="cashBalance">0 RWF</p>
+    </div>
 
-        <p><b>Email:</b> <span id="email">Loading...</span></p>
+    <div class="card">
+        <h3>Revenue</h3>
+        <p id="revenue">0 RWF</p>
+    </div>
 
-        <p><b>Currency:</b> <span id="currency">RWF</span></p>
+    <div class="card">
+        <h3>Expenses</h3>
+        <p id="expenses">0 RWF</p>
+    </div>
 
-    </section>
+    <div class="card">
+        <h3>Net Profit</h3>
+        <p id="netProfit">0 RWF</p>
+    </div>
 
+</section>
 
-    <!-- FINANCIAL OVERVIEW -->
-    <section class="summary">
+<!-- INVENTORY (NEW STEP 2 CONNECTED) -->
+<section class="summary">
 
-        <div class="card">
-            <h3>Cash Balance</h3>
-            <p id="cashBalance">0 RWF</p>
-        </div>
+    <div class="card">
+        <h3>Inventory Items</h3>
+        <p id="inventoryItems">0</p>
+    </div>
 
-        <div class="card">
-            <h3>Revenue</h3>
-            <p id="revenue">0 RWF</p>
-        </div>
+    <div class="card">
+        <h3>Inventory Value</h3>
+        <p id="inventoryValue">0 RWF</p>
+    </div>
 
-        <div class="card">
-            <h3>Expenses</h3>
-            <p id="expenses">0 RWF</p>
-        </div>
+    <div class="card">
+        <h3>Assets</h3>
+        <p id="assets">0 RWF</p>
+    </div>
 
-        <div class="card">
-            <h3>Net Profit</h3>
-            <p id="netProfit">0 RWF</p>
-        </div>
+    <div class="card">
+        <h3>Liabilities</h3>
+        <p id="liabilities">0 RWF</p>
+    </div>
 
-    </section>
+</section>
 
+<!-- EQUITY + HEALTH -->
+<section class="summary">
 
-    <!-- FINANCIAL POSITION -->
-    <section class="summary">
+    <div class="card">
+        <h3>Equity</h3>
+        <p id="equity">0 RWF</p>
+    </div>
 
-        <div class="card">
-            <h3>Assets</h3>
-            <p id="assets">0 RWF</p>
-        </div>
+    <div class="card">
+        <h3>Health Score</h3>
+        <p id="healthScore">0%</p>
+    </div>
 
-        <div class="card">
-            <h3>Liabilities</h3>
-            <p id="liabilities">0 RWF</p>
-        </div>
+</section>
 
-        <div class="card">
-            <h3>Equity</h3>
-            <p id="equity">0 RWF</p>
-        </div>
+<!-- AI INSIGHTS -->
+<section class="card insight-box">
 
-        <div class="card">
-            <h3>Health Score</h3>
-            <p id="healthScore">0%</p>
-        </div>
+    <h2>AI CFO Insights</h2>
 
-    </section>
+    <div id="insights">Loading insights...</div>
 
+</section>
 
-    <!-- ACCOUNTING STATUS -->
-    <section class="summary">
+<!-- RECENT -->
+<section class="card">
 
-        <div class="card">
-            <h3>Accounts</h3>
-            <p id="accountsCount">0</p>
-        </div>
+    <h2>Recent Activities</h2>
 
-        <div class="card">
-            <h3>Journal Entries</h3>
-            <p id="journalCount">0</p>
-        </div>
+    <div id="recentActivities">No transactions yet.</div>
 
-        <div class="card">
-            <h3>Ledger Lines</h3>
-            <p id="ledgerCount">0</p>
-        </div>
+</section>
 
-        <div class="card">
-            <h3>Trial Balance</h3>
-            <p id="trialBalanceStatus">
-                Pending
-            </p>
-        </div>
+<!-- QUICK ACTIONS -->
+<section class="card">
 
-    </section>
+    <h2>Quick Actions</h2>
 
+    <button onclick="location.href='journal-entry.html'">+ Journal Entry</button>
+    <button onclick="location.href='ledger.html'">Ledger</button>
+    <button onclick="location.href='income-statement.html'">Reports</button>
+    <button onclick="location.href='classification-dashboard.html'">Tax Center</button>
 
-    <!-- TAX CENTER -->
-    <section class="summary">
-
-        <div class="card">
-            <h3>EBM</h3>
-            <p id="ebmCount">0</p>
-        </div>
-
-        <div class="card">
-            <h3>PAYE</h3>
-            <p id="payeAmount">0 RWF</p>
-        </div>
-
-        <div class="card">
-            <h3>RSSB</h3>
-            <p id="rssbAmount">0 RWF</p>
-        </div>
-
-        <div class="card">
-            <h3>WHT</h3>
-            <p id="withholdingAmount">0 RWF</p>
-        </div>
-
-    </section>
-
-
-    <!-- AI CFO INSIGHTS -->
-    <section class="card insight-box">
-
-        <h2>AI CFO Insights</h2>
-
-        <div id="insights">
-
-            Loading insights...
-
-        </div>
-
-    </section>
-
-
-    <!-- RECENT ACTIVITIES -->
-    <section class="card">
-
-        <h2>Recent Activities</h2>
-
-        <div id="recentActivities">
-
-            No transactions yet.
-
-        </div>
-
-    </section>
-
-
-    <!-- QUICK ACTIONS -->
-    <section class="card">
-
-        <h2>Quick Actions</h2>
-
-        <button onclick="location.href='journal-entry.html'">
-            + Journal Entry
-        </button>
-
-        <button onclick="location.href='ledger.html'">
-            View Ledger
-        </button>
-
-        <button onclick="location.href='trial-balance.html'">
-            Trial Balance
-        </button>
-
-        <button onclick="location.href='income-statement.html'">
-            Financial Reports
-        </button>
-
-        <button onclick="location.href='classification-dashboard.html'">
-            Tax Center
-        </button>
-
-        <button onclick="location.href='ai-cfo-dashboard.html'">
-            AI CFO
-        </button>
-
-    </section>
+</section>
 
 </main>
-```
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="supabase-client.js"></script>
-
 <script src="dashboard.js"></script>
 
 </body>
-
 </html>
