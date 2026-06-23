@@ -1,6 +1,18 @@
+//////////////////////////////////////////////////////
+// SUPABASE INIT
+//////////////////////////////////////////////////////
+
 const sb = window.sb;
 
+//////////////////////////////////////////////////////
+// GLOBAL STATE
+//////////////////////////////////////////////////////
+
 let companyId = null;
+
+//////////////////////////////////////////////////////
+// INIT
+//////////////////////////////////////////////////////
 
 init();
 
@@ -8,18 +20,23 @@ async function init() {
 
   const { data: session } = await sb.auth.getSession();
 
-  if (!session.session) {
+  if (!session?.session) {
     window.location.href = "index.html";
     return;
   }
 
   const user = session.session.user;
 
-  const { data: company } = await sb
+  const { data: company, error } = await sb
     .from("companies")
     .select("*")
     .eq("user_id", user.id)
     .single();
+
+  if (error || !company) {
+    alert("Company not found");
+    return;
+  }
 
   companyId = company.id;
 
@@ -27,15 +44,20 @@ async function init() {
 }
 
 //////////////////////////////////////////////////////
-// CREATE ITEM
+// CREATE ITEM (SAFE VERSION)
 //////////////////////////////////////////////////////
 
 async function createItem() {
 
-  const name = document.getElementById("name").value;
-  const sku = document.getElementById("sku").value;
-  const cost = document.getElementById("cost").value;
-  const price = document.getElementById("price").value;
+  const name = document.getElementById("name").value.trim();
+  const sku = document.getElementById("sku").value.trim();
+  const cost = Number(document.getElementById("cost").value || 0);
+  const price = Number(document.getElementById("price").value || 0);
+
+  if (!name || !sku) {
+    alert("Name and SKU required");
+    return;
+  }
 
   const { error } = await sb.from("inventory_items").insert([{
     company_id: companyId,
@@ -60,23 +82,40 @@ async function createItem() {
 
 async function loadItems() {
 
-  const { data } = await sb
+  const { data, error } = await sb
     .from("inventory_items")
     .select("*")
     .eq("company_id", companyId);
+
+  if (error) {
+    console.log(error.message);
+    return;
+  }
 
   render(data || []);
   fillDropdown(data || []);
 }
 
 //////////////////////////////////////////////////////
-// RENDER
+// RENDER TABLE
 //////////////////////////////////////////////////////
 
 function render(items) {
 
   const tbody = document.getElementById("itemsTable");
+
+  if (!tbody) return;
+
   tbody.innerHTML = "";
+
+  if (!items.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5">No items found</td>
+      </tr>
+    `;
+    return;
+  }
 
   items.forEach(i => {
 
@@ -84,9 +123,9 @@ function render(items) {
       <tr>
         <td>${i.name}</td>
         <td>${i.sku}</td>
-        <td>${i.stock_qty}</td>
-        <td>${i.cost_price}</td>
-        <td>${i.selling_price}</td>
+        <td>${Number(i.stock_qty || 0)}</td>
+        <td>${Number(i.cost_price || 0)}</td>
+        <td>${Number(i.selling_price || 0)}</td>
       </tr>
     `;
   });
@@ -99,6 +138,9 @@ function render(items) {
 function fillDropdown(items) {
 
   const select = document.getElementById("itemSelect");
+
+  if (!select) return;
+
   select.innerHTML = "";
 
   items.forEach(i => {
@@ -111,15 +153,24 @@ function fillDropdown(items) {
 }
 
 //////////////////////////////////////////////////////
-// STOCK MOVEMENT
+// STOCK MOVEMENT + COGS ENGINE
 //////////////////////////////////////////////////////
 
 async function postMovement() {
 
   const itemId = document.getElementById("itemSelect").value;
   const type = document.getElementById("type").value;
-  const qty = Number(document.getElementById("qty").value);
+  const qty = Number(document.getElementById("qty").value || 0);
   const ref = document.getElementById("ref").value;
+
+  if (!itemId || qty <= 0) {
+    alert("Invalid movement data");
+    return;
+  }
+
+  //////////////////////////////////////////////////////
+  // SAVE MOVEMENT
+  //////////////////////////////////////////////////////
 
   await sb.from("inventory_movements").insert([{
     company_id: companyId,
@@ -129,17 +180,54 @@ async function postMovement() {
     reference: ref
   }]);
 
-  // UPDATE STOCK
+  //////////////////////////////////////////////////////
+  // GET ITEM
+  //////////////////////////////////////////////////////
+
   const { data: item } = await sb
     .from("inventory_items")
     .select("*")
     .eq("id", itemId)
     .single();
 
-  let newQty =
-    type === "IN"
-      ? item.stock_qty + qty
-      : item.stock_qty - qty;
+  if (!item) return;
+
+  let newQty = Number(item.stock_qty || 0);
+
+  //////////////////////////////////////////////////////
+  // STOCK OUT → COGS TRIGGER (STEP B)
+  //////////////////////////////////////////////////////
+
+  if (type === "OUT") {
+
+    const unitCost = Number(item.cost_price || 0);
+
+    const totalCost = unitCost * qty;
+
+    // 🔥 COGS ENTRY (NO EXTRA FILE NEEDED YET)
+    await sb.from("cogs_entries").insert([{
+      company_id: companyId,
+      item_id: itemId,
+      quantity: qty,
+      unit_cost: unitCost,
+      total_cost: totalCost,
+      reference: ref
+    }]);
+
+    newQty -= qty;
+  }
+
+  //////////////////////////////////////////////////////
+  // STOCK IN
+  //////////////////////////////////////////////////////
+
+  if (type === "IN") {
+    newQty += qty;
+  }
+
+  //////////////////////////////////////////////////////
+  // UPDATE STOCK
+  //////////////////////////////////////////////////////
 
   await sb
     .from("inventory_items")
