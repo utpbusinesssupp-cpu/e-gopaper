@@ -24,9 +24,17 @@ box-sizing:border-box;
 
 body{
 
-font-family:Arial,sans-serif;
+font-family:
+"Inter",
+"Segoe UI",
+sans-serif;
 
-background:#f4f6fb;
+background:
+linear-gradient(
+135deg,
+#eef4ff,
+#f8fbff
+);
 
 height:100vh;
 
@@ -38,16 +46,22 @@ overflow:hidden;
 display:flex;
 
 height:100vh;
+
+width:100%;
 }
 
+//////////////////////////////////////////////////////
+// HERO SIDE
 //////////////////////////////////////////////////////
 
 .hero-panel{
 
 flex:1;
 
-background:linear-gradient(
+background:
+linear-gradient(
 135deg,
+#0f172a,
 #1e3a8a,
 #2563eb
 );
@@ -60,29 +74,85 @@ align-items:center;
 
 justify-content:center;
 
-padding:60px;
+padding:80px;
+
+position:relative;
+
+overflow:hidden;
+}
+
+.hero-panel::before{
+
+content:"";
+
+position:absolute;
+
+width:500px;
+height:500px;
+
+background:
+rgba(255,255,255,.08);
+
+border-radius:50%;
+
+top:-120px;
+right:-120px;
+}
+
+.hero-panel::after{
+
+content:"";
+
+position:absolute;
+
+width:350px;
+height:350px;
+
+background:
+rgba(255,255,255,.05);
+
+border-radius:50%;
+
+bottom:-100px;
+left:-100px;
 }
 
 .hero-content{
 
-max-width:500px;
+max-width:700px;
+
+position:relative;
+
+z-index:2;
 }
 
 .hero-content h1{
 
-font-size:48px;
+font-size:72px;
 
-margin-bottom:20px;
+font-weight:800;
+
+line-height:1.1;
+
+margin-bottom:25px;
+
+letter-spacing:-2px;
 }
 
 .hero-content p{
 
-font-size:18px;
+font-size:22px;
 
-line-height:1.6;
+line-height:1.8;
 
-margin-bottom:30px;
+margin-bottom:40px;
+
+opacity:.95;
 }
+
+//////////////////////////////////////////////////////
+// FEATURE CARDS
+//////////////////////////////////////////////////////
 
 .feature-list{
 
@@ -91,24 +161,52 @@ display:grid;
 grid-template-columns:
 repeat(2,1fr);
 
-gap:15px;
+gap:20px;
 }
 
 .feature-card{
 
 background:
+rgba(255,255,255,.12);
+
+backdrop-filter:
+blur(12px);
+
+border:
+1px solid
 rgba(255,255,255,.15);
 
-padding:15px;
+padding:28px;
 
-border-radius:12px;
+border-radius:18px;
+
+font-size:18px;
+
+font-weight:600;
+
+transition:.3s;
 }
 
+.feature-card:hover{
+
+transform:
+translateY(-6px);
+
+background:
+rgba(255,255,255,.20);
+
+box-shadow:
+0 15px 35px
+rgba(0,0,0,.2);
+}
+
+//////////////////////////////////////////////////////
+// LOGIN PANEL
 //////////////////////////////////////////////////////
 
 .auth-panel{
 
-width:450px;
+width:600px;
 
 background:white;
 
@@ -118,62 +216,118 @@ align-items:center;
 
 justify-content:center;
 
-padding:40px;
+padding:70px;
+
+box-shadow:
+-20px 0 40px
+rgba(0,0,0,.08);
 }
 
 .auth-card{
 
 width:100%;
+
+max-width:460px;
 }
 
 .auth-card h2{
 
-margin-bottom:10px;
+font-size:40px;
+
+font-weight:800;
+
+margin-bottom:12px;
+
+color:#0f172a;
 }
 
 .auth-card p{
 
-color:#666;
+font-size:17px;
 
-margin-bottom:20px;
+color:#64748b;
+
+margin-bottom:35px;
 }
+
+//////////////////////////////////////////////////////
+// INPUTS
+//////////////////////////////////////////////////////
 
 input{
 
 width:100%;
 
-padding:14px;
+padding:18px 20px;
 
-margin-bottom:12px;
+margin-bottom:18px;
 
-border:1px solid #ddd;
+border:
+1px solid #dbe2ea;
 
-border-radius:10px;
+border-radius:14px;
+
+font-size:16px;
+
+transition:.25s;
 }
+
+input:focus{
+
+outline:none;
+
+border-color:#2563eb;
+
+box-shadow:
+0 0 0 4px
+rgba(37,99,235,.12);
+}
+
+//////////////////////////////////////////////////////
+// BUTTON
+//////////////////////////////////////////////////////
 
 button{
 
 width:100%;
 
-padding:14px;
-
-background:#2563eb;
+padding:18px;
 
 border:none;
 
+border-radius:14px;
+
+background:
+linear-gradient(
+135deg,
+#2563eb,
+#1d4ed8
+);
+
 color:white;
 
-font-weight:bold;
+font-size:16px;
 
-border-radius:10px;
+font-weight:700;
 
 cursor:pointer;
+
+transition:.25s;
 }
 
 button:hover{
 
-background:#1d4ed8;
+transform:
+translateY(-2px);
+
+box-shadow:
+0 12px 25px
+rgba(37,99,235,.35);
 }
+
+//////////////////////////////////////////////////////
+// LINKS
+//////////////////////////////////////////////////////
 
 .links{
 
@@ -181,33 +335,84 @@ display:flex;
 
 justify-content:space-between;
 
-margin-top:15px;
+margin-top:20px;
 
-font-size:14px;
+font-size:15px;
 }
 
 .links span{
 
+color:#2563eb;
+
 cursor:pointer;
 
-color:#2563eb;
+font-weight:600;
+
+transition:.2s;
 }
+
+.links span:hover{
+
+opacity:.8;
+}
+
+//////////////////////////////////////////////////////
+// MESSAGE
+//////////////////////////////////////////////////////
 
 #msg{
 
-margin-top:15px;
+margin-top:20px;
 
-font-size:14px;
+font-size:15px;
+
+font-weight:600;
 }
 
-@media(max-width:900px){
+//////////////////////////////////////////////////////
+// MOBILE
+//////////////////////////////////////////////////////
+
+@media(max-width:1100px){
 
 .hero-panel{
 display:none;
 }
 
 .auth-panel{
+
 width:100%;
+
+padding:40px;
+}
+
+.auth-card{
+
+max-width:500px;
+}
+
+}
+
+@media(max-width:600px){
+
+.auth-panel{
+
+padding:25px;
+}
+
+.auth-card h2{
+
+font-size:32px;
+}
+
+input{
+
+padding:16px;
+}
+
+button{
+
+padding:16px;
 }
 
 }
