@@ -1,20 +1,16 @@
-//////////////////////////////////////////////////////
-// SUPABASE CLIENT (GLOBAL)
-//////////////////////////////////////////////////////
-
 const sb = window.sb;
 
 //////////////////////////////////////////////////////
-// BALANCE SHEET ENGINE (V2 - PRODUCTION READY)
+// BALANCE SHEET ENGINE (PRODUCTION ERP V1)
 //////////////////////////////////////////////////////
 
 async function loadBalanceSheet(companyId) {
 
   //////////////////////////////////////////////////////
-  // FETCH JOURNAL LINES
+  // FETCH JOURNAL LINES (CORE ACCOUNTING SOURCE)
   //////////////////////////////////////////////////////
 
-  const { data, error } = await sb
+  const { data: lines, error } = await sb
     .from("journal_lines")
     .select(`
       debit,
@@ -29,7 +25,22 @@ async function loadBalanceSheet(companyId) {
   }
 
   //////////////////////////////////////////////////////
-  // INITIAL VALUES
+  // FETCH INVENTORY VALUE (STEP C INTEGRATION)
+  //////////////////////////////////////////////////////
+
+  const { data: inventory } = await sb
+    .from("inventory_items")
+    .select("stock_qty, cost_price")
+    .eq("company_id", companyId);
+
+  let inventoryValue = 0;
+
+  (inventory || []).forEach(i => {
+    inventoryValue += Number(i.stock_qty || 0) * Number(i.cost_price || 0);
+  });
+
+  //////////////////////////////////////////////////////
+  // INITIAL ACCOUNTS
   //////////////////////////////////////////////////////
 
   let assets = 0;
@@ -37,74 +48,82 @@ async function loadBalanceSheet(companyId) {
   let equity = 0;
 
   //////////////////////////////////////////////////////
-  // INVENTORY (STEP C INTEGRATION HOOK)
+  // ACCOUNTING CLASSIFICATION LOOP
   //////////////////////////////////////////////////////
 
-  let inventoryValue = 0;
-
-  try {
-    if (window.calculateStockValuation) {
-      inventoryValue = await window.calculateStockValuation(companyId);
-    }
-  } catch (e) {
-    console.log("Inventory valuation error:", e.message);
-    inventoryValue = 0;
-  }
-
-  //////////////////////////////////////////////////////
-  // CORE CALCULATION ENGINE
-  //////////////////////////////////////////////////////
-
-  (data || []).forEach(l => {
+  (lines || []).forEach(l => {
 
     const type = l.chart_of_accounts?.account_type;
 
+    const debit = Number(l.debit || 0);
+    const credit = Number(l.credit || 0);
+
     if (!type) return;
 
-    switch (type) {
+    ////////////////////////////////////////////////////
+    // ASSETS
+    ////////////////////////////////////////////////////
 
-      case "Asset":
-        assets += Number(l.debit || 0);
-        break;
+    if (type === "Asset") {
+      assets += debit;
+      assets -= credit;
+    }
 
-      case "Liability":
-        liabilities += Number(l.credit || 0);
-        break;
+    ////////////////////////////////////////////////////
+    // LIABILITIES
+    ////////////////////////////////////////////////////
 
-      case "Equity":
-        equity += Number(l.credit || 0);
-        break;
+    if (type === "Liability") {
+      liabilities += credit;
+      liabilities -= debit;
+    }
+
+    ////////////////////////////////////////////////////
+    // EQUITY
+    ////////////////////////////////////////////////////
+
+    if (type === "Equity") {
+      equity += credit;
+      equity -= debit;
     }
   });
 
   //////////////////////////////////////////////////////
-  // ADD INVENTORY TO ASSETS (CRITICAL STEP C)
+  // ADD INVENTORY AS CURRENT ASSET (CRITICAL ERP RULE)
   //////////////////////////////////////////////////////
 
-  assets += Number(inventoryValue || 0);
+  assets += inventoryValue;
 
   //////////////////////////////////////////////////////
-  // FINAL COMPUTATION
+  // FINAL EQUATION
   //////////////////////////////////////////////////////
 
   const totalLiabilitiesEquity = liabilities + equity;
   const balanceCheck = assets - totalLiabilitiesEquity;
 
-  //////////////////////////////////////////////////////
-  // STATUS ENGINE
-  //////////////////////////////////////////////////////
-
-  let status = "BALANCED ✔";
-
-  if (balanceCheck !== 0) {
-    status = "NOT BALANCED ❌";
-  }
+  const status =
+    balanceCheck === 0
+      ? "BALANCED ✔"
+      : "IMBALANCE DETECTED ❌";
 
   //////////////////////////////////////////////////////
-  // OUTPUT LOGS (DEBUG + AUDIT)
+  // UI OUTPUT
   //////////////////////////////////////////////////////
 
-  console.log("📊 BALANCE SHEET V2");
+  set("assets", assets);
+  set("liabilities", liabilities);
+  set("equity", equity);
+
+  set("liabilitiesEquity", totalLiabilitiesEquity);
+
+  const statusEl = document.getElementById("balanceStatus");
+  if (statusEl) statusEl.innerText = status;
+
+  //////////////////////////////////////////////////////
+  // DEBUG (ERP CONTROL PANEL)
+  //////////////////////////////////////////////////////
+
+  console.log("📊 BALANCE SHEET V1");
   console.log({
     assets,
     liabilities,
@@ -114,42 +133,28 @@ async function loadBalanceSheet(companyId) {
     balanceCheck,
     status
   });
+}
 
-  //////////////////////////////////////////////////////
-  // UI UPDATE (SAFE DOM CHECKS)
-  //////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+// SAFE SETTER
+//////////////////////////////////////////////////////
 
-  const set = (id, value) => {
-    const el = document.getElementById(id);
-    if (el) el.innerText = value.toLocaleString();
-  };
-
-  set("assets", assets);
-  set("liabilities", liabilities);
-  set("equity", equity);
-
-  const statusEl = document.getElementById("balanceStatus");
-  if (statusEl) statusEl.innerText = status;
-
-  //////////////////////////////////////////////////////
-  // OPTIONAL EXTRA UI (IF EXISTS)
-  //////////////////////////////////////////////////////
-
-  const totalEl = document.getElementById("liabilitiesEquity");
-  if (totalEl) {
-    totalEl.innerText = totalLiabilitiesEquity.toLocaleString();
+function set(id, value) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.innerText = Number(value || 0).toLocaleString() + " RWF";
   }
 }
 
 //////////////////////////////////////////////////////
-// AUTO RUN (PRO SAFE MULTI-TENANT)
+// AUTO RUN
 //////////////////////////////////////////////////////
 
 (async () => {
 
   const { data: session } = await sb.auth.getSession();
-
   const user = session?.session?.user;
+
   if (!user) return;
 
   const { data: company } = await sb
@@ -161,5 +166,4 @@ async function loadBalanceSheet(companyId) {
   if (!company) return;
 
   await loadBalanceSheet(company.id);
-
 })();
