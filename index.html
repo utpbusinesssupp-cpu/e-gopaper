@@ -1,252 +1,338 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>e-Gopaper Auth</title>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>
+e-Gopaper ERP
+</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-body{
-  margin:0;
-  font-family: Arial;
-  background: linear-gradient(135deg,#e0e7ff,#f4f6fb);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  height:100vh;
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
 }
 
-.card{
-  width:380px;
-  background:white;
-  padding:30px;
-  border-radius:16px;
-  box-shadow:0 15px 40px rgba(0,0,0,0.12);
-  text-align:center;
+body{
+
+font-family:Arial,sans-serif;
+
+background:#f4f6fb;
+
+height:100vh;
+
+overflow:hidden;
+}
+
+.auth-container{
+
+display:flex;
+
+height:100vh;
+}
+
+//////////////////////////////////////////////////////
+
+.hero-panel{
+
+flex:1;
+
+background:linear-gradient(
+135deg,
+#1e3a8a,
+#2563eb
+);
+
+color:white;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+padding:60px;
+}
+
+.hero-content{
+
+max-width:500px;
+}
+
+.hero-content h1{
+
+font-size:48px;
+
+margin-bottom:20px;
+}
+
+.hero-content p{
+
+font-size:18px;
+
+line-height:1.6;
+
+margin-bottom:30px;
+}
+
+.feature-list{
+
+display:grid;
+
+grid-template-columns:
+repeat(2,1fr);
+
+gap:15px;
+}
+
+.feature-card{
+
+background:
+rgba(255,255,255,.15);
+
+padding:15px;
+
+border-radius:12px;
+}
+
+//////////////////////////////////////////////////////
+
+.auth-panel{
+
+width:450px;
+
+background:white;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+padding:40px;
+}
+
+.auth-card{
+
+width:100%;
+}
+
+.auth-card h2{
+
+margin-bottom:10px;
+}
+
+.auth-card p{
+
+color:#666;
+
+margin-bottom:20px;
 }
 
 input{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  border:1px solid #ddd;
-  border-radius:10px;
+
+width:100%;
+
+padding:14px;
+
+margin-bottom:12px;
+
+border:1px solid #ddd;
+
+border-radius:10px;
 }
 
 button{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  background:#2563eb;
-  color:white;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
+
+width:100%;
+
+padding:14px;
+
+background:#2563eb;
+
+border:none;
+
+color:white;
+
+font-weight:bold;
+
+border-radius:10px;
+
+cursor:pointer;
 }
 
-.small{
-  font-size:13px;
-  margin-top:10px;
-  color:#555;
+button:hover{
+
+background:#1d4ed8;
 }
 
-.link{
-  color:#2563eb;
-  cursor:pointer;
-  font-weight:bold;
+.links{
+
+display:flex;
+
+justify-content:space-between;
+
+margin-top:15px;
+
+font-size:14px;
 }
 
-.hidden{display:none;}
+.links span{
+
+cursor:pointer;
+
+color:#2563eb;
+}
+
+#msg{
+
+margin-top:15px;
+
+font-size:14px;
+}
+
+@media(max-width:900px){
+
+.hero-panel{
+display:none;
+}
+
+.auth-panel{
+width:100%;
+}
+
+}
+
 </style>
+
 </head>
 
 <body>
 
-<div class="card">
+<div class="auth-container">
 
-  <h2 id="title">Login</h2>
+<section class="hero-panel">
 
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
+<div class="hero-content">
 
-  <button onclick="handleAuth()">Continue</button>
+<h1>
+e-Gopaper ERP
+</h1>
 
-  <div class="small">
-    <span class="link" onclick="toggleMode()">Switch Login/Signup</span>
-  </div>
+<p>
 
-  <div class="small">
-    <span class="link" onclick="forgotPassword()">Forgot Password?</span>
-  </div>
+Complete Accounting,
+Payroll,
+Tax &
+AI CFO Platform
+for Rwanda Businesses.
 
-  <div id="msg" class="small"></div>
+</p>
+
+<div class="feature-list">
+
+<div class="feature-card">
+📚 Accounting
+</div>
+
+<div class="feature-card">
+🧾 Tax Management
+</div>
+
+<div class="feature-card">
+👨‍💼 Payroll
+</div>
+
+<div class="feature-card">
+📊 Financial Reports
+</div>
+
+<div class="feature-card">
+🤖 AI CFO
+</div>
+
+<div class="feature-card">
+🏢 Multi Company
+</div>
 
 </div>
 
-  <div id="dash" class="card hidden">
+</div>
 
-  <h2>Dashboard</h2>
+</section>
 
-  <p id="info"></p>
+<section class="auth-panel">
 
-  <button onclick="logout()">Logout</button>
+<div class="auth-card">
+
+<h2 id="title">
+
+Login
+
+</h2>
+
+<p>
+
+Access your ERP dashboard
+
+</p>
+
+<input
+id="email"
+type="email"
+placeholder="Email">
+
+<input
+id="password"
+type="password"
+placeholder="Password">
+
+<button
+id="submitBtn"
+onclick="handleAuth()">
+
+Login
+
+</button>
+
+<div class="links">
+
+<span
+onclick="toggleMode()">
+
+Switch Login / Signup
+
+</span>
+
+<span
+onclick="forgotPassword()">
+
+Forgot Password
+
+</span>
 
 </div>
-<script>
 
-//////////////////////////////////////////////////////
-// SUPABASE INIT (SAFE)
-//////////////////////////////////////////////////////
+<div id="msg"></div>
 
-window.sb = window.sb || window.supabase.createClient(
-  "https://duznidzlfvadjcoxynjh.supabase.co",
-  "sb_publishable_3UzY44NnUmIi795wKqr2Kg_G0LBpJp4"
-);
+</div>
 
-const sb = window.sb;
+</section>
 
-let mode = "login";
+</div>
 
-//////////////////////////////////////////////////////
-// TOGGLE LOGIN / SIGNUP
-//////////////////////////////////////////////////////
-
-function toggleMode(){
-  mode = (mode === "login") ? "signup" : "login";
-  document.getElementById("title").innerText =
-    mode === "login" ? "Login" : "Sign Up";
-  showMsg("");
-}
-
-//////////////////////////////////////////////////////
-// MESSAGE
-//////////////////////////////////////////////////////
-
-function showMsg(msg){
-  document.getElementById("msg").innerText = msg;
-}
-
-//////////////////////////////////////////////////////
-// LOGIN + SIGNUP
-//////////////////////////////////////////////////////
-
-async function handleAuth(){
-
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  if(!email || !password){
-    showMsg("Email and password required");
-    return;
-  }
-
-  if(mode === "login"){
-
-    const { data, error } = await sb.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if(error){
-      showMsg(error.message);
-      return;
-    }
-
-    showMsg("Login success ✔");
-
-setTimeout(async () => {
-
-  const user = data.user;
-
-  const { data: companyData, error } = await sb
-    .from("companies")
-    .select("*")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  if (error) {
-    showMsg(error.message);
-    return;
-  }
-
-  if (!companyData) {
-    window.location.href = "onboarding.html";
-  } else {
-    window.location.href = "dashboard.html";
-  }
-
-}, 300);
-
-  } else {
-
-    const { error } = await sb.auth.signUp({
-      email,
-      password
-    });
-
-    if(error){
-      showMsg(error.message);
-      return;
-    }
-
-    showMsg("Check email to confirm account ✔");
-  }
-}
-
-//////////////////////////////////////////////////////
-// FORGOT PASSWORD
-//////////////////////////////////////////////////////
-
-async function forgotPassword(){
-
-  const email = document.getElementById("email").value;
-
-  if(!email){
-    showMsg("Enter email first");
-    return;
-  }
-
-  const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: "https://e-gopaper.vercel.app/reset-password.html"
-  });
-
-  if(error){
-    showMsg(error.message);
-    return;
-  }
-
-  showMsg("Reset email sent ✔ Check inbox");
-}
-
-  //////////////////////////////////////////////////////
-// DASHBOARD
-//////////////////////////////////////////////////////
-
-function showDashboard(user){
-
-  document.querySelector(".card").classList.add("hidden");
-
-  document.getElementById("dash").classList.remove("hidden");
-
-  document.getElementById("info").innerText =
-    "Logged in as: " + user.email;
-
-}
-
-//////////////////////////////////////////////////////
-// LOGOUT
-//////////////////////////////////////////////////////
-
-async function logout(){
-
-  await sb.auth.signOut();
-
-  location.reload();
-
-}
-</script>
+<script src="supabase-client.js"></script>
+<script src="auth.js"></script>
 
 </body>
+
 </html>
