@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
 <meta charset="UTF-8">
@@ -9,104 +10,330 @@
 
 <link rel="stylesheet" href="dashboard.css">
 
+<style>
+
+.filters{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr auto;
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.filters input,
+.filters select{
+    padding:12px;
+    border:1px solid #d1d5db;
+    border-radius:10px;
+}
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:20px;
+    margin-bottom:20px;
+}
+
+.summary-card{
+    background:#fff;
+    padding:20px;
+    border-radius:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+.summary-card h3{
+    color:#64748b;
+    font-size:14px;
+}
+
+.summary-card p{
+    font-size:24px;
+    font-weight:bold;
+    margin-top:10px;
+}
+
+.table-container{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#f3f4f6;
+    padding:14px;
+    text-align:left;
+}
+
+td{
+    padding:14px;
+    border-bottom:1px solid #e5e7eb;
+}
+
+tr:hover{
+    background:#f9fafb;
+}
+
+.ledger-header{
+    background:#e2e8f0;
+    font-weight:bold;
+}
+
+.total-row{
+    background:#f8fafc;
+    font-weight:bold;
+}
+
+button{
+    padding:12px 18px;
+    border:none;
+    border-radius:10px;
+    background:#2563eb;
+    color:white;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+@media(max-width:1000px){
+
+.summary-grid{
+    grid-template-columns:1fr;
+}
+
+.filters{
+    grid-template-columns:1fr;
+}
+
+}
+
+</style>
+
 </head>
+
 <body>
 
 <div class="container">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
+<!-- SIDEBAR -->
 
-        <h2>e-Gopaper</h2>
+<aside class="sidebar">
 
-        <ul>
-            <li onclick="window.location.href='dashboard.html'">Dashboard</li>
-            <li onclick="window.location.href='chart-of-accounts.html'">Chart of Accounts</li>
-            <li onclick="window.location.href='journal.html'">Transactions</li>
-            <li class="active">General Ledger</li>
-            <li>Reports</li>
-            <li id="logoutBtn">Logout</li>
-        </ul>
+<h2>e-Gopaper ERP</h2>
 
-    </aside>
+<ul>
 
+<li onclick="location.href='dashboard.html'">
+Dashboard
+</li>
 
-    <!-- MAIN -->
-    <main class="main">
+<li onclick="location.href='chart-of-accounts.html'">
+Chart of Accounts
+</li>
 
-        <section class="card">
+<li onclick="location.href='journal-entry.html'">
+Journal Entry
+</li>
 
-            <h1>General Ledger</h1>
+<li onclick="location.href='journal.html'">
+Journal Register
+</li>
 
-            <p>Detailed ledger transactions with running balances.</p>
+<li class="active">
+General Ledger
+</li>
 
-        </section>
+<li onclick="location.href='trial-balance.html'">
+Trial Balance
+</li>
 
+<li onclick="location.href='income-statement.html'">
+Income Statement
+</li>
 
-        <!-- FILTERS -->
-        <section class="card">
+<li onclick="location.href='balance-sheet.html'">
+Balance Sheet
+</li>
 
-            <h2>Filters</h2>
+<li onclick="location.href='cashflow.html'">
+Cash Flow Statement
+</li>
 
-            <label>Account</label>
-            <select id="accountFilter">
-                <option value="">All Accounts</option>
-            </select>
+<li onclick="location.href='classification-dashboard.html'">
+Tax Classification
+</li>
 
-            <br><br>
+<li onclick="location.href='ai-cfo-dashboard.html'">
+AI CFO Insights
+</li>
 
-            <label>From</label>
-            <input type="date" id="fromDate">
+<li onclick="location.href='settings.html'">
+Settings
+</li>
 
-            <label>To</label>
-            <input type="date" id="toDate">
+<li id="logoutBtn">
+Logout
+</li>
 
-            <button id="loadLedgerBtn">
-                Load Ledger
-            </button>
+</ul>
 
-        </section>
+</aside>
 
+<!-- MAIN -->
 
-        <!-- TABLE -->
-        <section class="card">
+<main class="main">
 
-            <table>
+<!-- HEADER -->
 
-                <thead>
+<section class="card">
 
-                <tr>
-                    <th>Date</th>
-                    <th>Reference</th>
-                    <th>Description</th>
-                    <th>Account</th>
-                    <th>Debit</th>
-                    <th>Credit</th>
-                    <th>Balance</th>
-                </tr>
+<h1>General Ledger</h1>
 
-                </thead>
+<p>
+Detailed account activity and transaction history.
+</p>
 
-                <tbody id="ledgerTable">
+</section>
 
-                    <tr>
-                        <td colspan="7">
-                            Loading...
-                        </td>
-                    </tr>
+<!-- SUMMARY -->
 
-                </tbody>
+<section class="summary-grid">
 
-            </table>
+<div class="summary-card">
 
-        </section>
+<h3>Total Transactions</h3>
 
-    </main>
+<p id="totalTransactions">
+0
+</p>
+
+</div>
+
+<div class="summary-card">
+
+<h3>Total Debits</h3>
+
+<p id="totalDebits">
+0
+</p>
+
+</div>
+
+<div class="summary-card">
+
+<h3>Total Credits</h3>
+
+<p id="totalCredits">
+0
+</p>
+
+</div>
+
+<div class="summary-card">
+
+<h3>Balance Status</h3>
+
+<p id="balanceStatus">
+Balanced
+</p>
+
+</div>
+
+</section>
+
+<!-- FILTERS -->
+
+<section class="card">
+
+<h2>Filters</h2>
+
+<div class="filters">
+
+<select id="accountFilter">
+
+<option value="">
+All Accounts
+</option>
+
+</select>
+
+<input
+type="date"
+id="fromDate">
+
+<input
+type="date"
+id="toDate">
+
+<button onclick="loadLedger()">
+Apply
+</button>
+
+</div>
+
+</section>
+
+<!-- LEDGER -->
+
+<section class="card">
+
+<h2>Ledger Transactions</h2>
+
+<div class="table-container">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Date</th>
+
+<th>Account</th>
+
+<th>Description</th>
+
+<th>Debit</th>
+
+<th>Credit</th>
+
+</tr>
+
+</thead>
+
+<tbody id="ledgerTable">
+
+<tr>
+
+<td colspan="5">
+
+Loading ledger...
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+</main>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase-client.js"></script>
+
 <script src="ledger.js"></script>
 
 </body>
+
 </html>
