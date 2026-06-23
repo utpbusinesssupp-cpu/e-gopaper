@@ -31,15 +31,27 @@
             </li>
 
             <li onclick="window.location.href='journal.html'">
-                Transactions
+                Journal
             </li>
 
             <li onclick="window.location.href='ledger.html'">
                 General Ledger
             </li>
 
-            <li>
-                Reports
+            <li onclick="window.location.href='trial-balance.html'">
+                Trial Balance
+            </li>
+
+            <li onclick="window.location.href='income-statement.html'">
+                Income Statement
+            </li>
+
+            <li onclick="window.location.href='balance-sheet.html'">
+                Balance Sheet
+            </li>
+
+            <li onclick="window.location.href='cashflow.html'">
+                Cash Flow
             </li>
 
             <li>
@@ -54,23 +66,21 @@
 
     </aside>
 
-
     <!-- MAIN CONTENT -->
     <main class="main">
 
-        <!-- HEADER -->
+        <!-- PAGE HEADER -->
         <section class="card">
 
             <h1>Chart of Accounts</h1>
 
             <p>
-                Manage the accounting structure of your business.
+                Manage and maintain your accounting structure.
             </p>
 
         </section>
 
-
-        <!-- SUMMARY -->
+        <!-- SUMMARY CARDS -->
         <section class="summary">
 
             <div class="summary-card">
@@ -105,8 +115,7 @@
 
         </section>
 
-
-        <!-- ACTIONS -->
+        <!-- ACTION BAR -->
         <section class="card">
 
             <div class="actions">
@@ -125,8 +134,7 @@
 
         </section>
 
-
-        <!-- TABLE -->
+        <!-- ACCOUNTS TABLE -->
         <section class="card">
 
             <h2>Accounts</h2>
@@ -138,15 +146,10 @@
                     <thead>
 
                         <tr>
-
                             <th>Code</th>
-
                             <th>Account Name</th>
-
                             <th>Type</th>
-
                             <th>Status</th>
-
                         </tr>
 
                     </thead>
@@ -154,13 +157,9 @@
                     <tbody id="accountsTable">
 
                         <tr>
-
                             <td colspan="4">
-
                                 Loading accounts...
-
                             </td>
-
                         </tr>
 
                     </tbody>
@@ -171,14 +170,14 @@
 
         </section>
 
-
         <!-- FOOTER -->
         <section class="card">
 
             <small>
 
-                Accounts are automatically created when a new company is onboarded.
-                Additional accounts can be added later without affecting reports.
+                Default Chart of Accounts is automatically created during company onboarding.
+                Additional accounts may be added without affecting existing reports,
+                ledgers, trial balance, income statement, balance sheet or cash flow.
 
             </small>
 
@@ -188,8 +187,9 @@
 
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase.js"></script>
 
 <script src="chart-of-accounts.js"></script>
 
