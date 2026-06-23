@@ -1,51 +1,91 @@
+//////////////////////////////////////////////////////
+// STOCK VALUATION ENGINE (BALANCE SHEET CORE)
+//////////////////////////////////////////////////////
+
 const sb = window.sb;
 
 //////////////////////////////////////////////////////
-// STOCK VALUATION ENGINE (AVERAGE COST METHOD)
+// MAIN FUNCTION
 //////////////////////////////////////////////////////
 
-async function calculateStockValuation(companyId) {
+async function calculateInventoryValue(companyId) {
 
   //////////////////////////////////////////////////////
-  // GET ALL ITEMS
+  // FETCH INVENTORY ITEMS
   //////////////////////////////////////////////////////
 
-  const { data: items } = await sb
+  const { data: items, error } = await sb
     .from("inventory_items")
     .select("*")
     .eq("company_id", companyId);
 
-  if (!items) return;
+  if (error) {
+    console.log("Inventory fetch error:", error.message);
+    return 0;
+  }
+
+  //////////////////////////////////////////////////////
+  // CALCULATE TOTAL VALUE
+  //////////////////////////////////////////////////////
 
   let totalInventoryValue = 0;
 
-  //////////////////////////////////////////////////////
-  // LOOP ITEMS
-  //////////////////////////////////////////////////////
-
-  for (const item of items) {
+  (items || []).forEach(item => {
 
     const qty = Number(item.stock_qty || 0);
     const cost = Number(item.cost_price || 0);
 
-    const value = qty * cost;
+    totalInventoryValue += qty * cost;
+  });
 
-    totalInventoryValue += value;
-
-    //////////////////////////////////////////////////////
-    // SAVE SNAPSHOT PER ITEM
-    //////////////////////////////////////////////////////
-
-    await sb.from("inventory_valuation").insert([{
-      company_id: companyId,
-      item_id: item.id,
-      quantity: qty,
-      average_cost: cost,
-      total_value: value
-    }]);
-  }
-
-  console.log("TOTAL INVENTORY VALUE:", totalInventoryValue);
+  //////////////////////////////////////////////////////
+  // RETURN VALUE
+  //////////////////////////////////////////////////////
 
   return totalInventoryValue;
+}
+
+//////////////////////////////////////////////////////
+// BALANCE SHEET INTEGRATION HOOK
+//////////////////////////////////////////////////////
+
+async function updateInventoryInBalanceSheet(companyId) {
+
+  const inventoryValue = await calculateInventoryValue(companyId);
+
+  console.log("📦 Inventory Value:", inventoryValue);
+
+  //////////////////////////////////////////////////////
+  // OPTIONAL: STORE IN SUMMARY TABLE (IF EXISTS)
+  //////////////////////////////////////////////////////
+
+  const { error } = await sb
+    .from("financial_snapshots")
+    .upsert([{
+      company_id: companyId,
+      inventory_value: inventoryValue,
+      updated_at: new Date()
+    }], {
+      onConflict: "company_id"
+    });
+
+  if (error) {
+    console.log("Snapshot error:", error.message);
+  }
+
+  return inventoryValue;
+}
+
+//////////////////////////////////////////////////////
+// AUTO REFRESH TRIGGER
+//////////////////////////////////////////////////////
+
+async function refreshStockValuation(companyId) {
+
+  const value = await updateInventoryInBalanceSheet(companyId);
+
+  return {
+    success: true,
+    inventory_value: value
+  };
 }
