@@ -1,12 +1,8 @@
 //////////////////////////////////////////////////////
-// SUPABASE INIT
+// INVENTORY ENGINE V1 (PRODUCTION READY)
 //////////////////////////////////////////////////////
 
 const sb = window.sb;
-
-//////////////////////////////////////////////////////
-// GLOBAL STATE
-//////////////////////////////////////////////////////
 
 let companyId = null;
 
@@ -20,7 +16,7 @@ async function init() {
 
   const { data: session } = await sb.auth.getSession();
 
-  if (!session?.session) {
+  if (!session?.session?.user) {
     window.location.href = "index.html";
     return;
   }
@@ -44,7 +40,7 @@ async function init() {
 }
 
 //////////////////////////////////////////////////////
-// CREATE ITEM (SAFE VERSION)
+// CREATE ITEM (WITH VALIDATION)
 //////////////////////////////////////////////////////
 
 async function createItem() {
@@ -85,7 +81,8 @@ async function loadItems() {
   const { data, error } = await sb
     .from("inventory_items")
     .select("*")
-    .eq("company_id", companyId);
+    .eq("company_id", companyId)
+    .order("name", { ascending: true });
 
   if (error) {
     console.log(error.message);
@@ -103,12 +100,11 @@ async function loadItems() {
 function render(items) {
 
   const tbody = document.getElementById("itemsTable");
-
   if (!tbody) return;
 
   tbody.innerHTML = "";
 
-  if (!items.length) {
+  if (items.length === 0) {
     tbody.innerHTML = `
       <tr>
         <td colspan="5">No items found</td>
@@ -123,9 +119,9 @@ function render(items) {
       <tr>
         <td>${i.name}</td>
         <td>${i.sku}</td>
-        <td>${Number(i.stock_qty || 0)}</td>
-        <td>${Number(i.cost_price || 0)}</td>
-        <td>${Number(i.selling_price || 0)}</td>
+        <td>${i.stock_qty}</td>
+        <td>${i.cost_price}</td>
+        <td>${i.selling_price}</td>
       </tr>
     `;
   });
@@ -138,7 +134,6 @@ function render(items) {
 function fillDropdown(items) {
 
   const select = document.getElementById("itemSelect");
-
   if (!select) return;
 
   select.innerHTML = "";
@@ -153,7 +148,7 @@ function fillDropdown(items) {
 }
 
 //////////////////////////////////////////////////////
-// STOCK MOVEMENT + COGS ENGINE
+// STOCK MOVEMENT ENGINE (CORE INVENTORY LOGIC)
 //////////////////////////////////////////////////////
 
 async function postMovement() {
@@ -168,8 +163,19 @@ async function postMovement() {
     return;
   }
 
+  const { data: item, error } = await sb
+    .from("inventory_items")
+    .select("*")
+    .eq("id", itemId)
+    .single();
+
+  if (error || !item) {
+    alert("Item not found");
+    return;
+  }
+
   //////////////////////////////////////////////////////
-  // SAVE MOVEMENT
+  // INSERT MOVEMENT
   //////////////////////////////////////////////////////
 
   await sb.from("inventory_movements").insert([{
@@ -181,53 +187,20 @@ async function postMovement() {
   }]);
 
   //////////////////////////////////////////////////////
-  // GET ITEM
-  //////////////////////////////////////////////////////
-
-  const { data: item } = await sb
-    .from("inventory_items")
-    .select("*")
-    .eq("id", itemId)
-    .single();
-
-  if (!item) return;
-
-  let newQty = Number(item.stock_qty || 0);
-
-  //////////////////////////////////////////////////////
-  // STOCK OUT → COGS TRIGGER (STEP B)
-  //////////////////////////////////////////////////////
-
-  if (type === "OUT") {
-
-    const unitCost = Number(item.cost_price || 0);
-
-    const totalCost = unitCost * qty;
-
-    // 🔥 COGS ENTRY (NO EXTRA FILE NEEDED YET)
-    await sb.from("cogs_entries").insert([{
-      company_id: companyId,
-      item_id: itemId,
-      quantity: qty,
-      unit_cost: unitCost,
-      total_cost: totalCost,
-      reference: ref
-    }]);
-
-    newQty -= qty;
-  }
-
-  //////////////////////////////////////////////////////
-  // STOCK IN
-  //////////////////////////////////////////////////////
-
-  if (type === "IN") {
-    newQty += qty;
-  }
-
-  //////////////////////////////////////////////////////
   // UPDATE STOCK
   //////////////////////////////////////////////////////
+
+  let newQty = item.stock_qty;
+
+  if (type === "IN") {
+    newQty = item.stock_qty + qty;
+  }
+
+  if (type === "OUT") {
+    newQty = item.stock_qty - qty;
+  }
+
+  if (newQty < 0) newQty = 0;
 
   await sb
     .from("inventory_items")
