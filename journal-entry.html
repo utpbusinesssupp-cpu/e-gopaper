@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 
@@ -11,41 +12,88 @@
 
 <style>
 
+.page-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:20px;
+}
+
 .form-card{
-    background:white;
+    background:#fff;
     padding:25px;
+    border-radius:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+input,
+select,
+textarea{
+    width:100%;
+    padding:12px;
+    margin-top:8px;
+    margin-bottom:15px;
+    border:1px solid #d1d5db;
+    border-radius:10px;
+}
+
+textarea{
+    min-height:90px;
+}
+
+.btn{
+    padding:12px 20px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.btn-primary{
+    background:#2563eb;
+    color:white;
+}
+
+.btn-primary:hover{
+    background:#1d4ed8;
+}
+
+.summary-box{
+    background:white;
+    padding:20px;
     border-radius:16px;
     box-shadow:0 10px 30px rgba(0,0,0,.08);
     margin-bottom:20px;
 }
 
-input, select{
-    width:100%;
-    padding:12px;
-    margin:8px 0;
-    border:1px solid #ddd;
-    border-radius:10px;
-}
-
-.line-row{
-    display:grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    gap:10px;
+.summary-box h3{
     margin-bottom:10px;
 }
 
-.btn{
-    padding:12px;
-    background:#2563eb;
-    color:white;
-    border:none;
-    border-radius:10px;
-    cursor:pointer;
-    margin-top:10px;
+.summary-value{
+    font-size:24px;
+    font-weight:bold;
+    color:#2563eb;
 }
 
-.remove{
-    background:#dc2626;
+.ai-box{
+    background:#eff6ff;
+    border-left:5px solid #2563eb;
+}
+
+.success{
+    color:#16a34a;
+}
+
+.error{
+    color:#dc2626;
+}
+
+@media(max-width:1000px){
+
+.page-grid{
+grid-template-columns:1fr;
+}
+
 }
 
 </style>
@@ -56,75 +104,233 @@ input, select{
 
 <div class="container">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
+<!-- SIDEBAR -->
 
-        <h2>e-Gopaper</h2>
+<aside class="sidebar">
 
-        <ul>
+<h2>e-Gopaper ERP</h2>
 
-            <li onclick="window.location.href='dashboard.html'">Dashboard</li>
+<ul>
 
-            <li onclick="window.location.href='chart-of-accounts.html'">Chart of Accounts</li>
+<li onclick="location.href='dashboard.html'">
+Dashboard
+</li>
 
-            <li class="active">Journal Entry</li>
+<li onclick="location.href='chart-of-accounts.html'">
+Chart of Accounts
+</li>
 
-            <li>Reports</li>
+<li class="active">
+Journal Entry
+</li>
 
-            <li id="logoutBtn">Logout</li>
+<li onclick="location.href='journal.html'">
+Journal Register
+</li>
 
-        </ul>
+<li onclick="location.href='ledger.html'">
+General Ledger
+</li>
 
-    </aside>
+<li onclick="location.href='trial-balance.html'">
+Trial Balance
+</li>
 
+<li onclick="location.href='income-statement.html'">
+Income Statement
+</li>
 
-    <!-- MAIN -->
-    <main class="main">
+<li onclick="location.href='balance-sheet.html'">
+Balance Sheet
+</li>
 
-        <div class="form-card">
+<li onclick="location.href='cashflow.html'">
+Cash Flow Statement
+</li>
 
-            <h2>Create Transaction</h2>
+<li onclick="location.href='classification-dashboard.html'">
+Tax Classification
+</li>
 
-            <input id="description" placeholder="Description">
+<li onclick="location.href='ai-cfo-dashboard.html'">
+AI CFO Insights
+</li>
 
-            <input id="reference" placeholder="Reference (optional)">
+<li onclick="location.href='settings.html'">
+Settings
+</li>
 
-            <input type="date" id="date">
+<li id="logoutBtn">
+Logout
+</li>
 
+</ul>
 
-            <h3>Transaction Type</h3>
+</aside>
 
-            <select id="type">
+<!-- MAIN -->
 
-                <option value="expense">Expense</option>
-                <option value="income">Income</option>
-                <option value="transfer">Transfer</option>
+<main class="main">
 
-            </select>
+<section class="card">
 
+<h1>Journal Entry</h1>
 
-            <h3>Amount</h3>
+<p>
+Create accounting transactions that automatically update the General Ledger, Trial Balance, Income Statement, Balance Sheet and Cash Flow Statement.
+</p>
 
-            <input id="amount" type="number" placeholder="Amount">
+</section>
 
-            <h3>Account</h3>
+<div class="page-grid">
 
-            <select id="account"></select>
+<!-- LEFT -->
 
+<div>
 
-            <button class="btn" onclick="submitTransaction()">
-                Post Transaction
-            </button>
+<div class="form-card">
 
-            <p id="msg"></p>
+<h2>Create Transaction</h2>
 
-        </div>
+<label>Description</label>
 
-    </main>
+<input
+type="text"
+id="description"
+placeholder="Transaction description">
+
+<label>Reference</label>
+
+<input
+type="text"
+id="reference"
+placeholder="Invoice / Receipt / Ref">
+
+<label>Date</label>
+
+<input
+type="date"
+id="date">
+
+<label>Transaction Type</label>
+
+<select id="type">
+
+<option value="expense">Expense</option>
+
+<option value="income">Income</option>
+
+<option value="salary">Salary</option>
+
+<option value="service">Professional Service</option>
+
+<option value="transfer">Transfer</option>
+
+</select>
+
+<label>Amount</label>
+
+<input
+type="number"
+id="amount"
+placeholder="Enter amount">
+
+<label>Account</label>
+
+<select id="account">
+
+<option value="">
+Loading Accounts...
+</option>
+
+</select>
+
+<button
+class="btn btn-primary"
+onclick="submitTransaction()">
+
+Post Transaction
+
+</button>
+
+<p id="msg"></p>
+
+</div>
+
+</div>
+
+<!-- RIGHT -->
+
+<div>
+
+<div class="summary-box">
+
+<h3>Transaction Preview</h3>
+
+<p><b>Debit:</b></p>
+
+<p id="previewDebit">
+-
+</p>
+
+<p><b>Credit:</b></p>
+
+<p id="previewCredit">
+-
+</p>
+
+</div>
+
+<div class="summary-box">
+
+<h3>AI Account Suggestion</h3>
+
+<p id="aiSuggestion">
+Waiting...
+</p>
+
+</div>
+
+<div class="summary-box ai-box">
+
+<h3>Tax Classification</h3>
+
+<p id="taxResult">
+Not classified
+</p>
+
+</div>
+
+<div class="summary-box">
+
+<h3>Amount</h3>
+
+<div
+class="summary-value"
+id="amountPreview">
+
+0 RWF
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</main>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase-client.js"></script>
+
+<script src="ai-suggestion-engine.js"></script>
+
+<script src="tax-engine.js"></script>
+
 <script src="journal-engine.js"></script>
 
 </body>
