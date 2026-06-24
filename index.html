@@ -34,7 +34,45 @@ body {
     height: 100vh;
     width: 100%;
 }
+/* LOGOS */
 
+.hero-logo{
+    margin-bottom:30px;
+}
+
+.hero-logo img{
+    width:130px;
+    height:130px;
+    object-fit:contain;
+    background:#ffffff;
+    border-radius:24px;
+    padding:12px;
+    box-shadow:0 20px 50px rgba(0,0,0,.25);
+    transition:.3s;
+}
+
+.hero-logo img:hover{
+    transform:scale(1.05);
+}
+
+.login-logo{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.login-logo img{
+    width:90px;
+    height:90px;
+    object-fit:contain;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.12);
+    transition:.3s;
+}
+
+.login-logo img:hover{
+    transform:translateY(-3px);
+}
+    
 .erp-logo-wrapper {
     display: flex;
     align-items: center;
@@ -302,58 +340,69 @@ button:hover {
 
 <section class="hero-panel">
 
-<div class="hero-content">
+    <div class="hero-content">
 
-<h1>
-e-Gopaper ERP
-</h1>
+        <div class="hero-logo">
 
-<p>
+            <img
+                src="e-gopaper web app.png"
+                alt="e-Gopaper Logo">
 
-Complete Accounting,
-Payroll,
-Tax &
-AI CFO Platform
-for Rwanda Businesses.
+        </div>
 
-</p>
+        <h1>
+            e-Gopaper ERP
+        </h1>
 
-<div class="feature-list">
+        <p>
+            Complete Accounting, Payroll, Tax & AI CFO Platform
+            for Rwanda Businesses.
+        </p>
 
-<div class="feature-card">
-📚 Accounting
-</div>
+        <div class="feature-list">
 
-<div class="feature-card">
-🧾 Tax Management
-</div>
+            <div class="feature-card">
+                📚 Accounting
+            </div>
 
-<div class="feature-card">
-👨‍💼 Payroll
-</div>
+            <div class="feature-card">
+                🧾 Tax Management
+            </div>
 
-<div class="feature-card">
-📊 Financial Reports
-</div>
+            <div class="feature-card">
+                👨‍💼 Payroll
+            </div>
 
-<div class="feature-card">
-🤖 AI CFO
-</div>
+            <div class="feature-card">
+                📊 Financial Reports
+            </div>
 
-<div class="feature-card">
-🏢 Multi Company
-</div>
+            <div class="feature-card">
+                🤖 AI CFO
+            </div>
 
-</div>
+            <div class="feature-card">
+                🏢 Multi Company
+            </div>
 
-</div>
+        </div>
+
+    </div>
 
 </section>
-
+    
 <section class="auth-panel">
 
 <div class="auth-card">
 
+<div class="login-logo">
+
+    <img
+      src="e-gopaper web app.png"
+      alt="e-Gopaper Logo">
+
+</div>    
+    
 <h2 id="title">
 
 Login
